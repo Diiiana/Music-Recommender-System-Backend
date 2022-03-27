@@ -41,7 +41,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     
+    'artist',
     'account',
+    'likes',
+    'song',
+    'tag'
 ]
 
 MIDDLEWARE = [
