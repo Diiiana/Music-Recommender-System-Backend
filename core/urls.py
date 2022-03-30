@@ -7,5 +7,6 @@ urlpatterns = [
     path('api/users/', include('account.urls')),
     path('api/artists/', include('artist.urls')),
     path('api/songs/', include('song.urls')),
-    path('api/tags/', include('tag.urls'))
+    path('api/tags/', include('tag.urls')),
+    path('api/recommendations/', include('recommendation.urls')),
 ]
