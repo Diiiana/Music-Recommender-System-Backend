@@ -25,16 +25,16 @@ class RecommenderCFMatrix:
     df = pd.DataFrame(list(qs))
     
 
-    df_songs_features = df.pivot(index='song_id', columns='user_id', values='liked').fillna(0)
-    mat_songs_features = csr_matrix(df_songs_features.values)
+    # df_songs_features = df.pivot(index='song_id', columns='user_id', values='liked').fillna(0)
+    # mat_songs_features = csr_matrix(df_songs_features.values)
     
     
     
-    reader = Reader(rating_scale=(0, 5))
+    # reader = Reader(rating_scale=(0, 5))
     
-    data = Dataset.load_from_df(df, reader)
-    trainset, testset = train_test_split(data, test_size=.25)
-    print(train_test_split(data, test_size=.25))
+    # data = Dataset.load_from_df(df, reader)
+    # trainset, testset = train_test_split(data, test_size=.25)
+    # print(train_test_split(data, test_size=.25))
 
     # algo = SVD()
     # algo.fit(trainset)

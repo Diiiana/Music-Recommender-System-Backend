@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 AUTH_USER_MODEL = 'account.UserAccount'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -187,3 +187,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'muse.mm.music@gmail.com'
+EMAIL_HOST_PASSWORD = 'Muse1Music!23'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

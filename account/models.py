@@ -1,4 +1,7 @@
 from django.db import models
+from tag.models import Tag
+from song.models import Song
+from artist.models import Artist
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
@@ -37,6 +40,10 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(_('email'), unique=True)
     user_name = models.CharField(max_length=100, unique=True)
+    tags = models.ManyToManyField(Tag)
+    artists = models.ManyToManyField(Artist)
+    liked_songs = models.ManyToManyField(Song)
+    
     start_date = models.DateTimeField(default=timezone.now)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

@@ -4,13 +4,25 @@ from song.serializers import MainAttributesSerializer
 from django.db import connection
 import json
 from song.models import Song
-from .cf_mf_recommender import RecommenderCFMatrix 
+from account.models import UserAccount
+# from .cf_mf_recommender import RecommenderCFMatrix 
+# from .collab_recommendations import MatrixFactorization
+# from .lightfm_recommender import LightfmRecommender
+# from .from_kg import FinalClass
+
 
 @api_view(['POST'])
 def get_cb_rec(request):
     similarities = []
-    favoriteSongs = request.data.get('songs')
-    print(favoriteSongs)
+    user_email = request.data.get('userEmail')
+    songs_liked = request.data.get('songs')  
+    
+    user = UserAccount.objects.get(email=user_email)
+    song = Song.objects.all().filter(id__in=songs_liked)
+    user.liked_songs.add(*song)
+    user.save()
+    
+    favoriteSongs = songs_liked[:5]
     c = connection.cursor()
     
     for song_id in favoriteSongs:
@@ -24,5 +36,8 @@ def get_cb_rec(request):
 
 @api_view(['POST'])
 def test_cf_mf(request):
-    RecommenderCFMatrix()
+    # RecommenderCFMatrix()
+    # MatrixFactorization()
+    # FinalClass()
+    # LightfmRecommender()
     return HttpResponse(status=200)
