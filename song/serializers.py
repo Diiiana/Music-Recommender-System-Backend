@@ -8,13 +8,13 @@ class SongSerializer(serializers.ModelSerializer):
         model = Song
         fields = (
             'id', 'song_name', 'release_date', 'duration', 'danceability',
-            'loudness', 'acousticness', 'instrumental', 'valence', 'energy', 'topic', 'image', 'url')
+            'speechiness', 'acousticness', 'instrumentalness', 'valence', 'energy', 'image', 'url')
         
         
 class RelevantAttributesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ('id', 'tag', 'danceability', 'loudness', 'acousticness', 'instrumental', 'valence', 'energy', 'topic')
+        fields = ('id', 'tag', 'danceability', 'speechiness', 'acousticness', 'instrumentalness', 'valence', 'energy')
         
     
 class MainAttributesSerializer(serializers.ModelSerializer):
@@ -23,4 +23,10 @@ class MainAttributesSerializer(serializers.ModelSerializer):
         fields = ('id', 'artist', 'tag', 'song_name', 'image', 'url')
     artist = ArtistSerializer()
     image = ImageField()
-    
+
+class ViewSongSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Song
+        fields = ('id', 'song_name', 'artist', 'tags', 'song_name', 'image', 'url', 'tag')
+    artist = ArtistSerializer()
+    image = ImageField()

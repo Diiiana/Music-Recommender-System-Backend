@@ -42,7 +42,7 @@ class LightfmRecommender:
     d = list(Likes.objects.values_list('song_id'))
     d = [i for sub in d for i in sub]
     
-    qs_2 = list(Song.objects.all().filter(id__in=d).values('song_id', 'tag')) #, 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'))
+    qs_2 = list(Song.objects.all().filter(id__in=d).values('song_id', 'tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'))
     df_songs = pd.DataFrame(qs_2)
     
     n_users = df_users['user_id'].unique().shape[0]
@@ -81,10 +81,10 @@ class LightfmRecommender:
 
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
     
-    songs_features_list = generate_feature_list(df_songs, ['tag']) #, 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
+    songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
     users_features_list = generate_feature_list(df_users, ['user_id'])
 
-    df_songs['song_features'] = create_features(df_songs, ['tag'], 'song_id') #, 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'], 'song_id')
+    df_songs['song_features'] = create_features(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'], 'song_id')
     df_users['user_features'] = create_features(df_users, ['user_id'], 'user_id')
     
     dataset = Dataset()
