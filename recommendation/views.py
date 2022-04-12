@@ -8,7 +8,8 @@ from account.models import UserAccount
 # from .cf_mf_recommender import RecommenderCFMatrix 
 # from .collab_recommendations import MatrixFactorization
 # from .lightfm_recommender import LightfmRecommender
-# from .from_kg import FinalClass
+from .from_kg import FinalClass
+# from .cf_knn_recommender import RecommenderCFMatrix
 
 
 @api_view(['POST'])

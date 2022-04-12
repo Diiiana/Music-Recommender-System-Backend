@@ -49,7 +49,8 @@ class LightfmRecommender:
     n_items = df_songs['song_id'].unique().shape[0]
     print("users=", n_users, "| items= ", n_items, "\n")
 
-    song_weights = df_users['song_id'].value_counts()
+    song_weights = (df_users['song_id'].value_counts()) / df_users['song_id'].value_counts().max()
+    print(song_weights)
     z1 = song_weights.to_dict()
 
     df_users['weight'] = df_users['song_id'].map(z1) 
@@ -80,6 +81,7 @@ class LightfmRecommender:
                 count += 1
 
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
+    print(df_merged)
     
     songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
     users_features_list = generate_feature_list(df_users, ['user_id'])
@@ -110,10 +112,10 @@ class LightfmRecommender:
     random_state=3)
     
     model.fit(
-        train_interactions.tocsr(),
+        interactions=train_interactions,
         item_features=song_features.tocsr(),
         user_features=user_features.tocsr(), 
-        # sample_weight=train_weights,
+        sample_weight=train_weights,
         epochs=10, 
         num_threads=4, 
         verbose=True)
