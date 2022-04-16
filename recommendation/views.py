@@ -5,12 +5,12 @@ from django.db import connection
 import json
 from song.models import Song
 from account.models import UserAccount
-# from .cf_mf_recommender import RecommenderCFMatrix 
 # from .collab_recommendations import MatrixFactorization
-# from .lightfm_recommender import LightfmRecommender
-from .from_kg import FinalClass
+from .lightfm_recommender import LightfmRecommender
+# from .from_kg import FinalClass
 # from .cf_knn_recommender import RecommenderCFMatrix
-
+# from .tensorflow_rec import TensorRecommender
+# from .als_recommender import AlsRecommender
 
 @api_view(['POST'])
 def get_cb_rec(request):

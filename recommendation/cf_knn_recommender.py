@@ -5,6 +5,8 @@ from song.models import Song
 from sklearn.neighbors import NearestNeighbors
 from fuzzywuzzy import fuzz
 import numpy as np
+from sklearn import metrics
+
 
 class Recommender:
     def __init__(self, metric, algorithm, k, data, decode_id_song):
@@ -38,8 +40,6 @@ class Recommender:
     def _get_recommendations(self, new_song, n_recommendations):
         recom_song_id = self._fuzzy_matching(song=new_song)
         print(f"Starting the recommendation process for {new_song} ...")
-        print(recom_song_id)
-        print(self.data)
         distances, indices = self.model.kneighbors(self.data[2000], n_neighbors=n_recommendations+1)
         return sorted(list(zip(indices.squeeze().tolist(), distances.squeeze().tolist())), key=lambda x: x[1])[:0:-1]
     

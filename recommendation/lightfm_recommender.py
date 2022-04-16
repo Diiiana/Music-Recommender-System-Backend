@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 
-from scipy.sparse import csr_matrix, coo_matrix
 from lightfm.data import Dataset
 from lightfm.evaluation import auc_score, precision_at_k, recall_at_k
 from lightfm import LightFM, cross_validation
@@ -81,7 +80,6 @@ class LightfmRecommender:
                 count += 1
 
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
-    print(df_merged)
     
     songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
     users_features_list = generate_feature_list(df_users, ['user_id'])
@@ -102,8 +100,8 @@ class LightfmRecommender:
     song_features = dataset.build_item_features(df_songs['song_features'])
     user_features = dataset.build_user_features(df_users['user_features'])
     
-    train_interactions, test_interactions = cross_validation.random_train_test_split(interactions, test_percentage=0.2, random_state=np.random.RandomState(3))
-    train_weights, test_weights = cross_validation.random_train_test_split(weights, test_percentage=0.2, random_state=np.random.RandomState(3))
+    train_interactions, test_interactions = cross_validation.random_train_test_split(interactions, test_percentage=0.3, random_state=np.random.RandomState(3))
+    train_weights, test_weights = cross_validation.random_train_test_split(weights, test_percentage=0.3, random_state=np.random.RandomState(3))
     
     model = LightFM(
     no_components=150,
@@ -116,7 +114,7 @@ class LightfmRecommender:
         item_features=song_features.tocsr(),
         user_features=user_features.tocsr(), 
         sample_weight=train_weights,
-        epochs=10, 
+        epochs=30, 
         num_threads=4, 
         verbose=True)
 
@@ -132,22 +130,26 @@ class LightfmRecommender:
         df_2 = pd.DataFrame({'scores': v})
         df_songs = df_songs.join(df_2)
         df_songs = df_songs.sort_values(by='scores', ascending=False)[:8]
-        acc = calculate_auc_score(model, test_interactions, song_features, user_features)
+        acc_train = calculate_auc_score(model, train_interactions, song_features, user_features)
+        acc_test = calculate_auc_score(model, test_interactions, song_features, user_features)
          
-        precision = precision_at_k(model,
-                                test_interactions,
-                               k = 10,
-                               user_features=user_features,
-                               item_features=song_features,
-                                num_threads=4).mean()
-        
-        recall = recall_at_k(model,
-                                test_interactions,
-                               k = 10,
+        precision_train = precision_at_k(model, train_interactions,
                                user_features=user_features,
                                item_features=song_features,
                                num_threads=4).mean()
-        print("\n\nPrecision is: ", precision)
-        print("Recall is: ", recall)
-        print("Accuracy is:", acc, "\n")
+        
+        precision_test = precision_at_k(model, test_interactions,
+                               user_features=user_features,
+                               item_features=song_features,
+                               num_threads=4).mean()
+        
+        recall_train = recall_at_k(model, train_interactions,
+                            user_features=user_features,
+                            item_features=song_features).mean()
+        recall_test = recall_at_k(model, test_interactions,
+                            user_features=user_features,
+                            item_features=song_features).mean()
+        print("\n\nPrecision is: train", precision_train, ", test: ", precision_test)
+        print("Recall is: train", recall_train, ", test: ", recall_test)
+        print("Accuracy is: train", acc_train, ", test: ", acc_test)
         

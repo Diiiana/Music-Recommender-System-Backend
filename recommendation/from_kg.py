@@ -4,6 +4,10 @@ from surprise import SVD, NormalPredictor, Dataset, Reader
 from surprise.model_selection import cross_validate, GridSearchCV, KFold
 import pandas as pd
 from surprise.accuracy import fcp
+from scipy.sparse import csr_matrix
+# importing product
+from itertools import product
+
 
 class FinalClass:
     def precision_recall_at_k(predictions, k=10, threshold=3.5):
@@ -38,6 +42,10 @@ class FinalClass:
     qs = list(Likes.objects.all().values('song_id', 'user_id', 'liked'))
     df = pd.DataFrame(list(qs))
 
+    df_songs_features = df.pivot(index='song_id', columns='user_id', values='liked').fillna(0)
+    print(df_songs_features)
+    df_songs_features = df_songs_features.groupby('song_id')
+        
     df_users = df['user_id'].unique()
     df_songs = df['song_id'].unique()
     
@@ -49,42 +57,42 @@ class FinalClass:
     for index, row in df_likes.iterrows():
         likes_values.append((row['user_id'], row['song_id']))
     
+    count = 0
+    data = []
+    for user in df_users:
+        # count += 1
+        for song in df_songs[:2000]:
+            t = (user, song)
+            if t in likes_values:
+                data.append([user, song, 1])
+            else:
+                data.append([user, song, 0])
+        if count > 200:
+            break
     
-    # count = 0
-    # data = []
-    # for user in df_users:
-    #     # count += 1
-    #     for song in df_songs[:3000]:
-    #         t = (user, song)
-    #         if t in likes_values:
-    #             data.append([user, song, 1])
-    #         else:
-    #             data.append([user, song, 0])
-    #     if count > 200:
-    #         break
     
-    # final_df = pd.DataFrame(df_likes, columns = ['user_id', 'song_id', 'liked'])
-    # print(final_df, len(final_df))
+    final_df = pd.DataFrame(df_likes, columns = ['user_id', 'song_id', 'liked'])
+    print(final_df, len(final_df))
     
-    # reader = Reader(rating_scale=(0, 1))
-    # data = Dataset.load_from_df(final_df[['user_id', 'song_id', 'liked']], reader)
+    reader = Reader(rating_scale=(0, 1))
+    data = Dataset.load_from_df(final_df[['user_id', 'song_id', 'liked']], reader)
 
-    # kf = KFold(n_splits=2)
-    # algo = SVD()
+    kf = KFold(n_splits=2)
+    algo = SVD()
     
-    # param_grid = {'n_epochs': [5], 'lr_all': [0.002], 'reg_all': [0.6]}
+    param_grid = {'n_epochs': [5], 'lr_all': [0.002], 'reg_all': [0.6]}
     
-    # gs = GridSearchCV(SVD, param_grid, measures=['rmse', 'mae'], cv=3)
-    # gs.fit(data)
-    # print(gs.best_score['rmse'])
+    gs = GridSearchCV(SVD, param_grid, measures=['rmse', 'mae'], cv=3)
+    gs.fit(data)
+    print(gs.best_score['rmse'])
 
-    # cross_validate(NormalPredictor(), data, measures=['RMSE', 'MAE'], cv=5, verbose=True)
+    cross_validate(NormalPredictor(), data, measures=['RMSE', 'MAE'], cv=5, verbose=True)
 
-    # for trainset, testset in kf.split(data):
-    #     algo.fit(trainset)
-    #     predictions = algo.test(testset)
-    #     # fcp(predictions)
-    #     precisions, recalls = precision_recall_at_k(predictions, k=2, threshold=1)
+    for trainset, testset in kf.split(data):
+        algo.fit(trainset)
+        predictions = algo.test(testset)
+        # fcp(predictions)
+        precisions, recalls = precision_recall_at_k(predictions, k=2, threshold=1)
 
-    #     print(sum(prec for prec in precisions.values()) / len(precisions))
-    #     print(sum(rec for rec in recalls.values()) / len(recalls))
+        print(sum(prec for prec in precisions.values()) / len(precisions))
+        print(sum(rec for rec in recalls.values()) / len(recalls))
