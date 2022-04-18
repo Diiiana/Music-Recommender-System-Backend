@@ -68,7 +68,7 @@ def resetPassword(request):
     try:
         user = UserAccount.objects.all().filter(email=user_email['email']).first()
         token = str(user.id) + '/' + str(uuid.uuid4())
-        subject = "Forget password link"
+        subject = "Forgot password link"
         message = f'Hello! \n Click on the link to reset your password \n http://localhost:3000/user/change-password/{token}'
         email_from = settings.EMAIL_HOST_USER
         recepient_list = [user_email['email']]

@@ -6,11 +6,15 @@ import json
 from song.models import Song
 from account.models import UserAccount
 # from .collab_recommendations import MatrixFactorization
-from .lightfm_recommender import LightfmRecommender
+# from .lightfm_recommender import LightfmRecommender
 # from .from_kg import FinalClass
 # from .cf_knn_recommender import RecommenderCFMatrix
 # from .tensorflow_rec import TensorRecommender
 # from .als_recommender import AlsRecommender
+# from .bpd_rec import BPDRecommender
+# from .als_rec import Als
+from .ncf_rec import NcfRecommender
+
 
 @api_view(['POST'])
 def get_cb_rec(request):

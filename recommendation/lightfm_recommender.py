@@ -35,25 +35,40 @@ class LightfmRecommender:
         return score
     
     
-    qs = list(Likes.objects.all().values('song_id', 'user_id', 'liked'))
-    df_users = pd.DataFrame(list(qs))
-
+    df_users = pd.read_csv('df.csv').iloc[:200000]
+    
     d = list(Likes.objects.values_list('song_id'))
     d = [i for sub in d for i in sub]
     
     qs_2 = list(Song.objects.all().filter(id__in=d).values('song_id', 'tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'))
     df_songs = pd.DataFrame(qs_2)
     
+    usr = df_users['user_id'].unique()
+    sng = df_users['song_id'].unique()
+    
+    lst = []
+    index = 0
+    for u in usr:
+        index += 1
+        print(index)
+        for s in sng:
+            v = Likes.objects.filter(user_id=u, song_id=s).first()
+            if v is not None:
+                lst.append([u, s, 1])
+            else:
+                lst.append([u, s, 0])
+    df = pd.DataFrame(lst, columns =['user_id', 'song_id', 'liked'])
+    df.to_csv('df.csv')
+    
     n_users = df_users['user_id'].unique().shape[0]
     n_items = df_songs['song_id'].unique().shape[0]
     print("users=", n_users, "| items= ", n_items, "\n")
 
     song_weights = (df_users['song_id'].value_counts()) / df_users['song_id'].value_counts().max()
-    print(song_weights)
     z1 = song_weights.to_dict()
 
     df_users['weight'] = df_users['song_id'].map(z1) 
-
+    
     count = 0
     user_ids = []
     final_users = []
@@ -86,6 +101,7 @@ class LightfmRecommender:
 
     df_songs['song_features'] = create_features(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'], 'song_id')
     df_users['user_features'] = create_features(df_users, ['user_id'], 'user_id')
+    print(" after features")
     
     dataset = Dataset()
     dataset.fit(
@@ -117,7 +133,8 @@ class LightfmRecommender:
         epochs=30, 
         num_threads=4, 
         verbose=True)
-
+    print("after interactions")
+    
     user_ids = [2]
     for user in user_ids:
         scores = model.predict(
