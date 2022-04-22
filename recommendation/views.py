@@ -13,8 +13,10 @@ from account.models import UserAccount
 # from .als_recommender import AlsRecommender
 # from .bpd_rec import BPDRecommender
 # from .als_rec import Als
-from .ncf_rec import NcfRecommender
-
+# from .ncf_rec import NcfRecommender
+# from .tensor_rec import TensorRecommender
+# from .keras_given_rec import KerasRecommender
+# from .datascience import Datascience
 
 @api_view(['POST'])
 def get_cb_rec(request):

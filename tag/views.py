@@ -16,9 +16,9 @@ def get_tags(self):
 
 @api_view(['POST'])
 def get_artists_by_genres(request):
-    user_email = request.data.get('userEmail')
+    user_id = request.data.get('userId')
     genres = request.data.get('genres')
-    user = UserAccount.objects.get(email=user_email)
+    user = UserAccount.objects.get(id=user_id)
     
     tags = Tag.objects.all().filter(id__in=genres)
     user.tags.add(*tags)

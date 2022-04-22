@@ -16,8 +16,6 @@ def get_song_by_id(request, song_id: int):
     song = Song.objects.get(pk=song_id)
     return Response(ViewSongSerializer(song, many=False).data, status=status.HTTP_200_OK)
 
-
-@api_view(['GET'])
-def getUserSongs(request, user_id : int):
+def getUserSongs(user_id):
     user = UserAccount.objects.get(pk=user_id)
-    return Response(ViewSongSerializer(user.liked_songs, many=True).data, status=status.HTTP_200_OK)
+    return ViewSongSerializer(user.liked_songs, many=True).data

@@ -35,30 +35,20 @@ class LightfmRecommender:
         return score
     
     
-    df_users = pd.read_csv('df.csv').iloc[:200000]
+    qs = list(Likes.objects.all().values('song_id', 'user_id', 'liked'))
+    df_users = pd.DataFrame(list(qs))
+    shuffled_df = df_users.sample(frac=1, random_state=4)
+    fraud_df = shuffled_df.loc[shuffled_df['liked'] == 1]
+    non_fraud_df = shuffled_df.loc[shuffled_df['liked'] == 0].sample(
+        n=100, random_state=42)
+    df_users = pd.concat([fraud_df, non_fraud_df])
+    print(df_users)
     
     d = list(Likes.objects.values_list('song_id'))
     d = [i for sub in d for i in sub]
     
     qs_2 = list(Song.objects.all().filter(id__in=d).values('song_id', 'tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'))
     df_songs = pd.DataFrame(qs_2)
-    
-    usr = df_users['user_id'].unique()
-    sng = df_users['song_id'].unique()
-    
-    lst = []
-    index = 0
-    for u in usr:
-        index += 1
-        print(index)
-        for s in sng:
-            v = Likes.objects.filter(user_id=u, song_id=s).first()
-            if v is not None:
-                lst.append([u, s, 1])
-            else:
-                lst.append([u, s, 0])
-    df = pd.DataFrame(lst, columns =['user_id', 'song_id', 'liked'])
-    df.to_csv('df.csv')
     
     n_users = df_users['user_id'].unique().shape[0]
     n_items = df_songs['song_id'].unique().shape[0]
@@ -81,7 +71,7 @@ class LightfmRecommender:
                 final_users.append((el, count))
                 user_ids.append(el)
                 count += 1
-    
+    print(count)
     count = 0
     song_ids = []
     for el in df_songs['song_id']:
@@ -93,7 +83,7 @@ class LightfmRecommender:
                 df_users = df_users.replace(el, count)
                 song_ids.append(el)
                 count += 1
-
+    print(count)
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
     
     songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
