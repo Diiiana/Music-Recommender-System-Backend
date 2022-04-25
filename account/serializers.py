@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from account.models import UserAccount
+from account.models import UserAccount, UserSongLiked, UserSongHistory
 from rest_framework_simplejwt.tokens import RefreshToken
 from tag.serializers import TagSerializer
 from song.serializers import ViewSongSerializer
@@ -31,9 +31,26 @@ class UserSerializerWithToken(UserAccountSerializer):
 
 class UserPreferencesSerializer(serializers.ModelSerializer):
     tags = TagSerializer('tags', many=True)
-    liked_songs = ViewSongSerializer('liked_songs', many=True)
     artists = ArtistSerializer('artists', many=False)
 
     class Meta:
         model = UserAccount
-        fields = ['id', 'user_name', 'email', 'tags', 'artists', 'liked_songs']
+        fields = ['id', 'user_name', 'email', 'tags', 'artists']
+
+
+class UserLikedSerializer(serializers.ModelSerializer):
+    user = UserPreferencesSerializer('user', many=False)
+    song = ViewSongSerializer('song', many=False)
+
+    class Meta:
+        model = UserSongLiked
+        fields = ['user', 'song', 'timestamp', 'feedback']
+
+
+class UserHistorySerializer(serializers.ModelSerializer):
+    user = UserPreferencesSerializer('user', many=False)
+    song = ViewSongSerializer('song', many=False)
+
+    class Meta:
+        model = UserSongHistory
+        fields = ['user', 'song', 'timestamp']

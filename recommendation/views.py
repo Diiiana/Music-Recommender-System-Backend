@@ -4,7 +4,7 @@ from song.serializers import MainAttributesSerializer
 from django.db import connection
 import json
 from song.models import Song
-from account.models import UserAccount
+from account.models import UserAccount, UserSongLiked
 # from .collab_recommendations import MatrixFactorization
 # from .lightfm_recommender import LightfmRecommender
 # from .from_kg import FinalClass
@@ -24,10 +24,10 @@ def get_cb_rec(request):
     user_email = request.data.get('userEmail')
     songs_liked = request.data.get('songs')  
     
-    user = UserAccount.objects.get(email=user_email)
+    user = UserAccount.objects.get(id=user_email)
     song = Song.objects.all().filter(id__in=songs_liked)
-    user.liked_songs.add(*song)
-    user.save()
+    for s in song:
+        UserSongLiked.objects.create(user=user, song=s, feedback=1)
     
     favoriteSongs = songs_liked[:5]
     c = connection.cursor()

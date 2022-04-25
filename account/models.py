@@ -42,8 +42,9 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     user_name = models.CharField(max_length=100, unique=True)
     tags = models.ManyToManyField(Tag)
     artists = models.ManyToManyField(Artist)
-    liked_songs = models.ManyToManyField(Song)
-    
+    password_reset_token = models.CharField(max_length=100, unique=True, null=True)
+    password_reset_token_expiration = models.DateTimeField(auto_now_add=True, null=True)
+
     start_date = models.DateTimeField(default=timezone.now)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -55,3 +56,24 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.user_name
+
+
+class UserSongLiked(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
+    song = models.ForeignKey(Song, on_delete=models.SET_NULL, null=True)
+    feedback = models.IntegerField(default=-1)
+    timestamp = models.DateField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "user_song_liked"
+        unique_together = ('user', 'song')
+
+class UserSongHistory(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
+    song = models.ForeignKey(Song, on_delete=models.SET_NULL, null=True)
+    timestamp = models.DateField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "user_song_history"
+        unique_together = ('user', 'song')
+    

@@ -13,7 +13,7 @@ import json
 
 @api_view(['GET'])
 def get_artists(self):
-    queryset = Artist.objects.all()
+    queryset = Artist.objects.all().order_by('name')
     serializer_class = ArtistSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
@@ -23,8 +23,8 @@ def get_artists(self):
 def get_music_for_user(request):
     selected_artists = request.data.get('artists')
     user_email = request.data.get('userEmail')
-    
-    user = UserAccount.objects.get(email=user_email)
+    user = UserAccount.objects.get(id=user_email)
+
     artist = Artist.objects.filter(id__in=selected_artists)
     user.artists.add(*artist)
     user.save()
