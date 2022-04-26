@@ -18,20 +18,22 @@ from account.models import UserAccount, UserSongLiked
 # from .keras_given_rec import KerasRecommender
 # from .datascience import Datascience
 
+
 @api_view(['POST'])
 def get_cb_rec(request):
     similarities = []
     user_email = request.data.get('userEmail')
-    songs_liked = request.data.get('songs')  
-    
+    songs_liked = request.data.get('songs')
+
     user = UserAccount.objects.get(id=user_email)
     song = Song.objects.all().filter(id__in=songs_liked)
     for s in song:
-        UserSongLiked.objects.create(user=user, song=s, feedback=1)
-    
+        if UserSongLiked.objects.filter(user=user, song=s).first() is None:
+            UserSongLiked.objects.create(user=user, song=s, feedback=1)
+
     favoriteSongs = songs_liked[:5]
     c = connection.cursor()
-    
+
     for song_id in favoriteSongs:
         c.execute('SELECT * FROM song_similarities(' + str(song_id) + ')')
         rows = c.fetchall()
@@ -40,6 +42,7 @@ def get_cb_rec(request):
     c.close()
     s = Song.objects.filter(pk__in=similarities)
     return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
+
 
 @api_view(['POST'])
 def test_cf_mf(request):

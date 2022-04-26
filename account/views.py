@@ -19,7 +19,9 @@ from django.conf import settings
 import uuid
 from django.db.models import Count
 from django.utils import timezone
-
+import random
+from rest_framework.views import APIView
+from .email_send import EmailSender
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -33,6 +35,21 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+class BlacklistTokenUpdateView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = ()
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -76,17 +93,8 @@ def getUsers(request):
 def resetPassword(request):
     user_email = request.data.get('email')
     try:
-        user = UserAccount.objects.all().filter(
-            email=user_email['email']).first()
-        token = str(user.id) + '/' + str(uuid.uuid4())
-        subject = "Forgot password verification"
-        message = f'Hello! \n Use this verification code to reset your password: {token}'
-        email_from = settings.EMAIL_HOST_USER
-        recepient_list = [user_email['email']]
-        send_mail(subject, message, email_from, recepient_list)
-        user.password_reset_token = token
-        user.password_reset_token_expiration = timezone.now() + timezone.timedelta(minutes=5)
-        user.save()
+        user = UserAccount.objects.get(email=user_email)
+        EmailSender(user_email).start()
         return Response(user.id, status=200)
     except Exception as e:
         message = {'detail': 'Email Address not found!'}

@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import MyTokenObtainPairView, getUserProfile, getUsers, registerUser, resetPassword, changePassword, getUserPreferences, getUserHistory, getUserLiked, getUserChartData
-
+from .views import MyTokenObtainPairView, getUserProfile, getUsers, registerUser, resetPassword, changePassword, getUserPreferences, getUserHistory, getUserLiked, getUserChartData, BlacklistTokenUpdateView
 urlpatterns = [
     path('', getUsers, name='users'),
 
@@ -14,4 +13,6 @@ urlpatterns = [
     path('register', registerUser, name='register'),
     path('reset-password', resetPassword, name='reset-password'),
     path('changePassword', changePassword, name='changePassword'),
+    path('logout/blacklist', BlacklistTokenUpdateView.as_view(),
+         name='blacklist'),
 ]

@@ -6,7 +6,6 @@ from account.models import UserSongHistory, UserAccount, UserSongLiked
 from .serializers import SongSerializer, ViewSongSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-import json
 
 
 @api_view(['GET'])
@@ -26,3 +25,29 @@ def get_song_by_id(request, song_id: int):
     data = {'liked': UserSongLiked.objects.filter(user=user, song=song).values(
         'feedback').first(), 'song': ViewSongSerializer(song, many=False).data}
     return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dislike_song_by_id_for_user(request, song_id: int):
+    song = Song.objects.get(pk=song_id)
+    user = UserAccount.objects.get(id=request.user.id)
+    value = UserSongLiked.objects.get(user=user, song=song)
+    if value is not None:
+        value.feedback = 0
+        value.save()
+    else:
+        UserSongLiked.objects.create(user=user, song=song, feedback=0)
+    return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def like_song_by_id_for_user(request, song_id: int):
+    song = Song.objects.get(pk=song_id)
+    user = UserAccount.objects.get(id=request.user.id)
+    value = UserSongLiked.objects.get(user=user, song=song)
+    if value is not None:
+        value.feedback = 1
+        value.save()
+    else:
+        UserSongLiked.objects.create(user=user, song=song, feedback=1)
+    return Response(status=status.HTTP_200_OK)

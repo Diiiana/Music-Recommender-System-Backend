@@ -9,7 +9,7 @@ from django.db import connection
 
 @api_view(['GET'])
 def get_tags(self):
-    queryset = Tag.objects.all()
+    queryset = Tag.objects.all().order_by('name')
     serializer_class = TagSerializer(queryset, many=True)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
 
@@ -22,7 +22,6 @@ def get_artists_by_genres(request):
     
     tags = Tag.objects.all().filter(id__in=genres)
     user.tags.add(*tags)
-    
     user.save()
     
     results = list(map(int, genres))
