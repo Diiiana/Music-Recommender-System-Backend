@@ -1,27 +1,21 @@
-from tkinter import N
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import UserAccountSerializer, UserSerializerWithToken, UserPreferencesSerializer, UserLikedSerializer, UserHistorySerializer
+from .serializers import UserAccountSerializer, UserSerializerWithToken, UserFavoritesSerializer, UserLikedSerializer, UserHistorySerializer, PlaylistSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from .models import UserAccount, UserSongLiked, UserSongHistory
-from tag.models import Tag
-from artist.models import Artist
+from .models import UserAccount, UserSongLiked, UserSongHistory, Playlist, UserFavorites
 from song.models import Song
 from song.serializers import ViewSongSerializer
 from django.contrib.auth.hashers import make_password
-from django.core.mail import send_mail
-from django.conf import settings
-import uuid
 from django.db.models import Count
 from django.utils import timezone
-import random
 from rest_framework.views import APIView
 from .email_send import EmailSender
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -55,7 +49,6 @@ class BlacklistTokenUpdateView(APIView):
 @api_view(['POST'])
 def registerUser(request):
     data = request.data
-    print(data['user_name'], data['email'], data['password'])
     try:
         user = UserAccount.objects.create(
             user_name=data['user_name'],
@@ -67,10 +60,12 @@ def registerUser(request):
     except:
         if UserAccount.objects.filter(user_name=data['user_name']).first() is not None:
             message = {'detail': 'This username is already taken!'}
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
         else:
-            if UserAccount.objects.filter(user_name=data['email']).first() is not None:
+            if UserAccount.objects.filter(email=data['email']).first() is not None:
                 message = {'detail': 'Email address already taken!'}
-        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+                return Response(message, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -86,7 +81,22 @@ def getUserProfile(request):
 def getUsers(request):
     users = UserAccount.objects.all()
     serializer = UserAccountSerializer(users, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUser(request):
+    user = UserAccount.objects.get(id=request.user.id)
+    serializer = UserAccountSerializer(user, many=False)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserFavoriteArtistsAndGenres(request):
+    user = UserAccount.objects.get(id=request.user.id)
+    favorites = UserFavorites.objects.filter(user=user).first()
+    return Response(UserFavoritesSerializer(favorites, many=False).data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -120,10 +130,11 @@ def changePassword(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def getUserPreferences(request, user_id: int):
-    user = UserAccount.objects.get(id=user_id)
-    interaction = UserSongLiked.objects.filter(user=user)
-    if(interaction is not None and user.tags.count() > 0 is not None and user.artists.count() > 0 is not None):
+def getUserPreferences(request):
+    user = UserAccount.objects.get(id=request.user.id)
+    interaction = UserSongLiked.objects.filter(user=user).first()
+    favorites = UserFavorites.objects.filter(user=user).first()
+    if(interaction is not None and favorites.tags.count() > 0 is not None and favorites.artists.count() > 0 is not None):
         user_songs = UserSongLiked.objects.filter(
             user=user).values_list('song', flat=True)
         return Response(ViewSongSerializer(Song.objects.filter(id__in=user_songs), many=True).data, status=200)
@@ -141,7 +152,7 @@ def getUserHistory(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserLiked(request):
-    user_songs = UserSongLiked.objects.filter(user=request.user)
+    user_songs = UserSongLiked.objects.filter(user=request.user, feedback=1)
     return Response(UserLikedSerializer(user_songs, many=True).data, status=200)
 
 
@@ -151,3 +162,59 @@ def getUserChartData(request):
     value = UserSongLiked.objects.filter(user=request.user).values(
         'timestamp').annotate(total=Count('timestamp')).order_by('total')
     return Response(value, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserPlaylists(request):
+    user = UserAccount.objects.get(id=request.user.id)
+    playlists = Playlist.objects.filter(user=user)
+    return Response(PlaylistSerializer(playlists, many=True).data, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def saveUserPlaylists(request):
+    name = request.data.get('playlistName')
+    user = UserAccount.objects.get(id=request.user.id)
+    Playlist.objects.create(name=name, user=user)
+    playlists = Playlist.objects.filter(user=user)
+    return Response(PlaylistSerializer(playlists, many=True).data, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def savePlaylistSong(request, song_id: int):
+    playlist_list = request.data.get('playlists')
+    song = Song.objects.get(id=song_id)
+    user = UserAccount.objects.get(id=request.user.id)
+    for id in playlist_list:
+        playlist = Playlist.objects.get(id=id, user=user)
+        playlist.songs.add(song)
+    playlists = Playlist.objects.filter(user=user)
+    return Response(PlaylistSerializer(playlists, many=True).data, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPlaylistById(request, id: int):
+    user = UserAccount.objects.get(id=request.user.id)
+    playlist = Playlist.objects.get(id=id, user=user)
+    return Response(PlaylistSerializer(playlist, many=False).data, status=200)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteSongFromPlaylist(request, id: int, song_id: int):
+    user = UserAccount.objects.get(id=request.user.id)
+    playlist = Playlist.objects.get(id=id, user=user)
+    song = Song.objects.get(id=song_id)
+    playlist.songs.remove(song)
+    return Response(PlaylistSerializer(playlist, many=False).data, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def testUserPref(request):
+    print(request.user.id)
+    print(UserFavoritesSerializer(UserFavorites.objects.all(), many=True).data)
+    return Response(status=200)

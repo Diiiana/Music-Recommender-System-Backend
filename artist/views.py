@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 from django.http import HttpResponse
 from django.db import connection
 from song.models import Song
-from account.models import UserAccount
+from account.models import UserAccount, UserFavorites
 from song.serializers import MainAttributesSerializer
 import json
 
@@ -22,14 +22,18 @@ def get_artists(self):
 @api_view(['POST'])
 def get_music_for_user(request):
     selected_artists = request.data.get('artists')
-    user_email = request.data.get('userEmail')
-    user = UserAccount.objects.get(id=user_email)
-
+    user_id = request.data.get('userId')
+    user = UserAccount.objects.get(id=user_id)
     artist = Artist.objects.filter(id__in=selected_artists)
-    user.artists.add(*artist)
-    user.save()
-    
-    selected_genres = user.tags
+
+    favorites = UserFavorites.objects.filter(user=user).first()
+    if favorites is not None:
+        favorites.artists.set(artist)
+    else:
+        object = UserFavorites.objects.create(user=user)
+        object.artists.set(artist)
+        object.save()
+        
     selected_artists = list(map(int, selected_artists))
     artists = str(selected_artists)
     

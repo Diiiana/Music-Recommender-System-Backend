@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from account.models import UserAccount, UserSongLiked, UserSongHistory
+from account.models import UserAccount, UserSongLiked, UserSongHistory, UserSongComment, Playlist, UserFavorites
 from rest_framework_simplejwt.tokens import RefreshToken
 from tag.serializers import TagSerializer
 from song.serializers import ViewSongSerializer
@@ -29,6 +29,12 @@ class UserSerializerWithToken(UserAccountSerializer):
         return str(token)
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = ['id', 'user_name', 'email']
+
+
 class UserPreferencesSerializer(serializers.ModelSerializer):
     tags = TagSerializer('tags', many=True)
     artists = ArtistSerializer('artists', many=False)
@@ -39,7 +45,7 @@ class UserPreferencesSerializer(serializers.ModelSerializer):
 
 
 class UserLikedSerializer(serializers.ModelSerializer):
-    user = UserPreferencesSerializer('user', many=False)
+    user = UserSerializer('user', many=False)
     song = ViewSongSerializer('song', many=False)
 
     class Meta:
@@ -48,9 +54,37 @@ class UserLikedSerializer(serializers.ModelSerializer):
 
 
 class UserHistorySerializer(serializers.ModelSerializer):
-    user = UserPreferencesSerializer('user', many=False)
+    user = UserSerializer('user', many=False)
     song = ViewSongSerializer('song', many=False)
 
     class Meta:
         model = UserSongHistory
         fields = ['user', 'song', 'timestamp']
+
+
+class UserSongCommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer('user', many=False)
+    song = ViewSongSerializer('song', many=False)
+
+    class Meta:
+        model = UserSongComment
+        fields = ['id', 'user', 'song', 'timestamp', 'comment']
+
+
+class PlaylistSerializer(serializers.ModelSerializer):
+    user = UserSerializer('user', many=False)
+    songs = ViewSongSerializer('song', many=True)
+
+    class Meta:
+        model = Playlist
+        fields = ['id', 'name', 'user', 'songs']
+
+
+class UserFavoritesSerializer(serializers.ModelSerializer):
+    user = UserSerializer('user', many=False)
+    tags = TagSerializer('tags', many=True)
+    artists = ArtistSerializer('artists', many=True)
+    
+    class Meta:
+        model = UserFavorites
+        fields = ['id', 'user', 'tags', 'artists']
