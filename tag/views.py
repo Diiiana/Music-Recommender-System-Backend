@@ -43,5 +43,5 @@ def get_artists_by_genres(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getTagsByPopularity(request):
-
+    
     return Response(status=status.HTTP_200_OK)
