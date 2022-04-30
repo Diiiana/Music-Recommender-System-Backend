@@ -23,8 +23,11 @@ def get_song_by_id(request, song_id: int):
     user = UserAccount.objects.get(id=request.user.id)
     if not list(UserSongHistory.objects.filter(user=user, song=song).values_list('user', flat=True)):
         UserSongHistory.objects.create(user=user, song=song)
-    data = {'liked': UserSongLiked.objects.filter(user=user, song=song).values(
-        'feedback').first(), 'song': ViewSongSerializer(song, many=False).data}
+    like_value = UserSongLiked.objects.filter(user=user, song=song).values(
+        'feedback').first()
+    if like_value is None:
+        like_value = -1
+    data = {'liked': -1, 'song': ViewSongSerializer(song, many=False).data}
     return Response(data, status=status.HTTP_200_OK)
 
 
