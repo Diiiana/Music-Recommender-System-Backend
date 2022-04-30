@@ -23,4 +23,7 @@ urlpatterns = [
     path('changePassword', views.changePassword, name='changePassword'),
     path('logout/blacklist', views.BlacklistTokenUpdateView.as_view(),
          name='blacklist'),
+    
+#     path('spotify_login', views.spotify_login, name="spotify_login"),
+#     path('callback', views.callback_spotify_login, name="callback_spotify")
 ]

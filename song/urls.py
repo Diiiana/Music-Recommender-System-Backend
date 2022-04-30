@@ -8,5 +8,6 @@ urlpatterns = [
     path('user-like/id/<int:song_id>', views.like_song_by_id_for_user),
     path('comments/<int:song_id>', views.getSongComments),
     path('comments/user/<int:song_id>', views.getMySongComments),
-    path('comments/post/<int:song_id>', views.saveNewComment)
+    path('comments/post/<int:song_id>', views.saveNewComment),
+    path('by-date', views.getSongsByReleaseDate)
 ]

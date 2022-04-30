@@ -6,7 +6,7 @@ from account.models import UserSongHistory, UserAccount, UserSongLiked, UserSong
 from account.serializers import UserSongCommentSerializer
 from .serializers import SongSerializer, ViewSongSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['GET'])
@@ -92,3 +92,10 @@ def saveNewComment(request, song_id: int):
     comment = request.data.get('comment')
     UserSongComment.objects.create(user=user, song=song, comment=comment)
     return Response(UserSongCommentSerializer(UserSongComment.objects.filter(song=song), many=True).data, status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSongsByReleaseDate(request):
+    songs = Song.objects.all().order_by('-release_date')[:50]
+    return Response(ViewSongSerializer(songs, many=True).data, status=status.HTTP_200_OK)

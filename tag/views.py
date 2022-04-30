@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from account.models import UserAccount, UserFavorites
 from django.db import connection
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['GET'])
@@ -30,8 +32,16 @@ def get_artists_by_genres(request):
         object.save()
     results = list(map(int, genres))
     cursor = connection.cursor()
-    query = "SELECT * FROM get_artist_for_tags (ARRAY " + str(results) + ", " + str(90) + ")"
+    query = "SELECT * FROM get_artist_for_tags (ARRAY " + \
+        str(results) + ", " + str(90) + ")"
     cursor.execute(query)
     results = cursor.fetchall()
 
     return Response(results, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getTagsByPopularity(request):
+
+    return Response(status=status.HTTP_200_OK)

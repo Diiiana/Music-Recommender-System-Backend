@@ -27,6 +27,6 @@ class MainAttributesSerializer(serializers.ModelSerializer):
 class ViewSongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
-        fields = ('id', 'song_name', 'artist', 'tags', 'song_name', 'image', 'url', 'tag')
+        fields = ('id', 'song_name', 'artist', 'tags', 'song_name', 'image', 'url', 'tag', 'release_date')
     artist = ArtistSerializer()
     image = ImageField()
