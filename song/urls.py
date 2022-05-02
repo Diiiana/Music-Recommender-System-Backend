@@ -9,5 +9,7 @@ urlpatterns = [
     path('comments/<int:song_id>', views.getSongComments),
     path('comments/user/<int:song_id>', views.getMySongComments),
     path('comments/post/<int:song_id>', views.saveNewComment),
-    path('by-date', views.getSongsByReleaseDate)
+    path('by-date', views.getSongsByReleaseDate),
+    path('genre/<int:genre_id>', views.getSongsByGenre),
+    path('artist/<int:artist_id>', views.getSongsByArtist),
 ]

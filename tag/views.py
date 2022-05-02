@@ -7,6 +7,8 @@ from account.models import UserAccount, UserFavorites
 from django.db import connection
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Count
+from song.models import Song
 
 
 @api_view(['GET'])
@@ -43,5 +45,6 @@ def get_artists_by_genres(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getTagsByPopularity(request):
-    
-    return Response(status=status.HTTP_200_OK)
+    data = Song.objects.values('tags').annotate(
+        popularity=Count('tags__id')).values('tags__id', 'tags__name', 'popularity').order_by('-popularity')
+    return Response(data, status=status.HTTP_200_OK)

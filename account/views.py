@@ -179,7 +179,7 @@ def getUserLiked(request):
 @permission_classes([IsAuthenticated])
 def getUserChartData(request):
     value = UserSongLiked.objects.filter(user=request.user).values(
-        'timestamp').annotate(total=Count('timestamp')).order_by('total')
+        'timestamp').annotate(activity=Count('timestamp')).order_by('timestamp')
     return Response(value, status=200)
 
 

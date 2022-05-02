@@ -19,15 +19,16 @@ def get_songs(self):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_song_by_id(request, song_id: int):
-    song = Song.objects.get(pk=song_id)
+    song = Song.objects.get(id=song_id)
     user = UserAccount.objects.get(id=request.user.id)
     if not list(UserSongHistory.objects.filter(user=user, song=song).values_list('user', flat=True)):
         UserSongHistory.objects.create(user=user, song=song)
-    like_value = UserSongLiked.objects.filter(user=user, song=song).values(
-        'feedback').first()
+    like_value = UserSongLiked.objects.filter(user=user, song=song).values_list(
+        'feedback', flat=True).first()
     if like_value is None:
         like_value = -1
-    data = {'liked': -1, 'song': ViewSongSerializer(song, many=False).data}
+    data = {'liked': like_value,
+            'song': ViewSongSerializer(song, many=False).data}
     return Response(data, status=status.HTTP_200_OK)
 
 
@@ -98,4 +99,18 @@ def saveNewComment(request, song_id: int):
 @permission_classes([IsAuthenticated])
 def getSongsByReleaseDate(request):
     songs = Song.objects.all().order_by('-release_date')[:50]
+    return Response(ViewSongSerializer(songs, many=True).data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSongsByGenre(request, genre_id: int):
+    songs = Song.objects.filter(tags__id=genre_id)[:100]
+    return Response(ViewSongSerializer(songs, many=True).data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSongsByArtist(request, artist_id: int):
+    songs = Song.objects.filter(artist__id=artist_id)[:100]
     return Response(ViewSongSerializer(songs, many=True).data, status=status.HTTP_200_OK)
