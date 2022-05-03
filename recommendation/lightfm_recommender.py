@@ -37,12 +37,6 @@ class LightfmRecommender:
     
     qs = list(Likes.objects.all().values('song_id', 'user_id', 'liked'))
     df_users = pd.DataFrame(list(qs))
-    shuffled_df = df_users.sample(frac=1, random_state=4)
-    fraud_df = shuffled_df.loc[shuffled_df['liked'] == 1]
-    non_fraud_df = shuffled_df.loc[shuffled_df['liked'] == 0].sample(
-        n=100, random_state=42)
-    df_users = pd.concat([fraud_df, non_fraud_df])
-    print(df_users)
     
     d = list(Likes.objects.values_list('song_id'))
     d = [i for sub in d for i in sub]
@@ -71,7 +65,6 @@ class LightfmRecommender:
                 final_users.append((el, count))
                 user_ids.append(el)
                 count += 1
-    print(count)
     count = 0
     song_ids = []
     for el in df_songs['song_id']:
@@ -83,7 +76,6 @@ class LightfmRecommender:
                 df_users = df_users.replace(el, count)
                 song_ids.append(el)
                 count += 1
-    print(count)
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
     
     songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
@@ -91,7 +83,6 @@ class LightfmRecommender:
 
     df_songs['song_features'] = create_features(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'], 'song_id')
     df_users['user_features'] = create_features(df_users, ['user_id'], 'user_id')
-    print(" after features")
     
     dataset = Dataset()
     dataset.fit(
@@ -123,7 +114,6 @@ class LightfmRecommender:
         epochs=30, 
         num_threads=4, 
         verbose=True)
-    print("after interactions")
     
     user_ids = [2]
     for user in user_ids:

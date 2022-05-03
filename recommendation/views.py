@@ -3,20 +3,16 @@ from rest_framework.decorators import api_view
 from song.serializers import MainAttributesSerializer
 from django.db import connection
 import json
+import numpy as np
+import tensorflow as tf
 from song.models import Song
 from account.models import UserAccount, UserSongLiked
-# from .collab_recommendations import MatrixFactorization
+from tensorflow.keras.utils import plot_model
 # from .lightfm_recommender import LightfmRecommender
-# from .from_kg import FinalClass
-# from .cf_knn_recommender import RecommenderCFMatrix
-# from .tensorflow_rec import TensorRecommender
-# from .als_recommender import AlsRecommender
-# from .bpd_rec import BPDRecommender
-# from .als_rec import Als
 # from .ncf_rec import NcfRecommender
-# from .tensor_rec import TensorRecommender
-# from .keras_given_rec import KerasRecommender
-# from .datascience import Datascience
+# from .kerasmodel import KerasRecommender
+from likes.models import Likes
+import pandas as pd
 
 
 @api_view(['POST'])
@@ -44,10 +40,28 @@ def get_cb_rec(request):
     return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
 
 
-@api_view(['POST'])
+def make_list(X):
+    if isinstance(X, list):
+        return X
+    return [X]
+
+
+def list_no_list(X):
+    if len(X) == 1:
+        return X[0]
+    return X
+
+
+@api_view(['GET'])
 def test_cf_mf(request):
-    # RecommenderCFMatrix()
-    # MatrixFactorization()
-    # FinalClass()
     # LightfmRecommender()
-    return HttpResponse(status=200)
+    reconstructed_model = tf.keras.models.load_model("neural_model")
+    plot_model(reconstructed_model, to_file='model.png', show_shapes=True)
+
+    song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
+    predictions = reconstructed_model.predict(
+        [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    l = np.array(predictions, dtype=np.float32).tolist()
+    l = sum(l, [])
+    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    return HttpResponse(song_prediction, status=200)
