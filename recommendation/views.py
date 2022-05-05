@@ -7,21 +7,46 @@ import numpy as np
 import tensorflow as tf
 from song.models import Song
 from account.models import UserAccount, UserSongLiked
-from tensorflow.keras.utils import plot_model
+from song.serializers import ViewSongSerializer
 # from .lightfm_recommender import LightfmRecommender
 # from .ncf_rec import NcfRecommender
-# from .kerasmodel import KerasRecommender
 from likes.models import Likes
 import pandas as pd
+from .models import UserSongRecommendation
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+# from .hybrid_recomm import HybridRecomm
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getSimilarSongs(request, id: int):
+    similarities = []
+    user_id = request.user.id
+    user = UserAccount.objects.get(id=user_id)
+    c = connection.cursor()
+    c.execute('SELECT * FROM song_similarities(' + str(id) + ')')
+    rows = c.fetchall()
+    for s in rows:
+        similarities.append(s[0])
+    c.close()
+
+    s = Song.objects.filter(pk__in=similarities)
+    recommendations = UserSongRecommendation.objects.filter(user=user).first()
+    if recommendations is not None:
+        recommendations.songs.add(*s)
+    else:
+        object = UserSongRecommendation.objects.create(user=user)
+        object.songs.set(s)
+    return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
 
 
 @api_view(['POST'])
 def get_cb_rec(request):
     similarities = []
-    user_email = request.data.get('userEmail')
+    user_id = request.data.get('userId')
     songs_liked = request.data.get('songs')
 
-    user = UserAccount.objects.get(id=user_email)
+    user = UserAccount.objects.get(id=user_id)
     song = Song.objects.all().filter(id__in=songs_liked)
     for s in song:
         if UserSongLiked.objects.filter(user=user, song=s).first() is None:
@@ -37,31 +62,52 @@ def get_cb_rec(request):
             similarities.append(s[0])
     c.close()
     s = Song.objects.filter(pk__in=similarities)
+    recommendations = UserSongRecommendation.objects.filter(user=user).first()
+    if recommendations is not None:
+        recommendations.songs.add(s)
+    else:
+        object = UserSongRecommendation.objects.create(user=user)
+        object.songs.set(s)
     return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
-
-
-def make_list(X):
-    if isinstance(X, list):
-        return X
-    return [X]
-
-
-def list_no_list(X):
-    if len(X) == 1:
-        return X[0]
-    return X
 
 
 @api_view(['GET'])
 def test_cf_mf(request):
     # LightfmRecommender()
     reconstructed_model = tf.keras.models.load_model("neural_model")
-    plot_model(reconstructed_model, to_file='model.png', show_shapes=True)
+    tf.keras.utils.plot_model(
+        reconstructed_model, to_file='model.png', show_shapes=True)
 
     song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
+
     predictions = reconstructed_model.predict(
         [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
     l = np.array(predictions, dtype=np.float32).tolist()
     l = sum(l, [])
     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    return HttpResponse(song_prediction, status=200)
+    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    print(song_prediction[::-1][:10])
+
+    predictions = reconstructed_model.predict(
+        [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    l = np.array(predictions, dtype=np.float32).tolist()
+    l = sum(l, [])
+    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    print(song_prediction[::-1][:10])
+
+    # predictions = reconstructed_model2.predict(
+    #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    # l = np.array(predictions, dtype=np.float32).tolist()
+    # l = sum(l, [])
+    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
+    # print(song_prediction)
+
+    # predictions = reconstructed_model2.predict(
+    #     [np.array([5]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    # l = np.array(predictions, dtype=np.float32).tolist()
+    # l = sum(l, [])
+    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
+    # print(song_prediction)
+    # return HttpResponse(ViewSongSerializer(data, many=True).data, status=200)
+    return HttpResponse(200)

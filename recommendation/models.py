@@ -5,8 +5,7 @@ from song.models import Song
 
 class UserSongRecommendation(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
-    recommendation = models.ForeignKey(
-        Song, on_delete=models.SET_NULL, null=True)
+    songs = models.ManyToManyField(Song, default=None)
 
     class Meta:
-        db_table = "user_song_recommendation"
+        db_table = "recommendation"

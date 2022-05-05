@@ -75,3 +75,7 @@ class NcfRecommender:
     e = model.evaluate([val_user_ids, val_song_ids],
                        val_ratings, batch_size=128)
     print("test loss, test acc, test precision, test recall:", e)
+
+    model.save('neural_model')
+    tf.keras.utils.plot_model(
+        model, to_file='model.png', show_shapes=True)
