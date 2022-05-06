@@ -15,7 +15,8 @@ import pandas as pd
 from .models import UserSongRecommendation
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-# from .hybrid_recomm import HybridRecomm
+import tensorflow as tf
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -73,28 +74,28 @@ def get_cb_rec(request):
 
 @api_view(['GET'])
 def test_cf_mf(request):
-    # LightfmRecommender()
     reconstructed_model = tf.keras.models.load_model("neural_model")
-    tf.keras.utils.plot_model(
-        reconstructed_model, to_file='model.png', show_shapes=True)
+    reconstructed_model.fit([np.array([71]), np.array([3000])], pd.Series([1]))
+    # tf.keras.utils.plot_model(
+    #     reconstructed_model, to_file='model.png', show_shapes=True)
 
-    song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
+    # song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
 
-    predictions = reconstructed_model.predict(
-        [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    l = np.array(predictions, dtype=np.float32).tolist()
-    l = sum(l, [])
-    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    print(song_prediction[::-1][:10])
+    # predictions = reconstructed_model.predict(
+    #     [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    # l = np.array(predictions, dtype=np.float32).tolist()
+    # l = sum(l, [])
+    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    # print(song_prediction[::-1][:10])
 
-    predictions = reconstructed_model.predict(
-        [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    l = np.array(predictions, dtype=np.float32).tolist()
-    l = sum(l, [])
-    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    print(song_prediction[::-1][:10])
+    # predictions = reconstructed_model.predict(
+    #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    # l = np.array(predictions, dtype=np.float32).tolist()
+    # l = sum(l, [])
+    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    # print(song_prediction[::-1][:10])
 
     # predictions = reconstructed_model2.predict(
     #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])

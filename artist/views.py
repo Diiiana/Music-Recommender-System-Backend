@@ -9,13 +9,13 @@ from song.models import Song
 from account.models import UserAccount, UserFavorites
 from song.serializers import MainAttributesSerializer
 import json
-from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Count
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_artists(self):
     queryset = Artist.objects.all().order_by('name')
     serializer_class = ArtistSerializer(queryset, many=True)
@@ -23,6 +23,7 @@ def get_artists(self):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def get_music_for_user(request):
     selected_artists = request.data.get('artists')
     user_id = request.data.get('userId')

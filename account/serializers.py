@@ -84,7 +84,7 @@ class UserFavoritesSerializer(serializers.ModelSerializer):
     user = UserSerializer('user', many=False)
     tags = TagSerializer('tags', many=True)
     artists = ArtistSerializer('artists', many=True)
-    
+
     class Meta:
         model = UserFavorites
         fields = ['id', 'user', 'tags', 'artists']

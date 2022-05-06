@@ -6,10 +6,11 @@ from account.models import UserSongHistory, UserAccount, UserSongLiked, UserSong
 from account.serializers import UserSongCommentSerializer
 from .serializers import SongSerializer, ViewSongSerializer
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_songs(self):
     queryset = Song.objects.all()
     serializer_class = SongSerializer(queryset, many=True)

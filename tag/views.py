@@ -6,12 +6,13 @@ from rest_framework.decorators import api_view
 from account.models import UserAccount, UserFavorites
 from django.db import connection
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Count
 from song.models import Song
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_tags(self):
     queryset = Tag.objects.all().order_by('name')
     serializer_class = TagSerializer(queryset, many=True)
@@ -19,6 +20,7 @@ def get_tags(self):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def get_artists_by_genres(request):
     user_id = request.data.get('userId')
     genres = request.data.get('genres')

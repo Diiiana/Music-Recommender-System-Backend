@@ -15,24 +15,6 @@ from django.db.models import Count
 from django.utils import timezone
 from rest_framework.views import APIView
 from .email_send import EmailSender
-# from spotipy import SpotifyOAuth
-# from urllib.parse import urlparse
-# import requests
-
-# @api_view(['GET'])
-# def spotify_login(request):
-#     sp_auth = SpotifyOAuth(client_id="a98766a10cf04d9c835ffa3e9e07f3d3",
-#                            client_secret='ac869bd9346d4f24ba19d5f4b55653cc',
-#                            redirect_uri='http://localhost:8000/api/users/callback',
-#                            scope="user-read-recently-played user-read-playback-position playlist-read-collaborative user-read-playback-state streaming user-library-read user-read-currently-playing user-follow-read user-top-read")
-#     redirect_url = sp_auth.get_authorize_url()
-#     auth_token = sp_auth.get_access_token()
-#     print(auth_token)
-#     return Response(status=200)
-
-# @api_view(['GET'])
-# def callback_spotify_login(request):
-#     return Response(status=200)
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
