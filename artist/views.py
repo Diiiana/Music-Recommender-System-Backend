@@ -8,10 +8,10 @@ from django.db import connection
 from song.models import Song
 from account.models import UserAccount, UserFavorites
 from song.serializers import MainAttributesSerializer
-import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Count
+import json
 
 
 @api_view(['GET'])

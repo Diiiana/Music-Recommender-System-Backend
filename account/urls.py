@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-     path('test', views.testUserPref, name='users'),
     path('', views.getUsers, name='users'),
     path('user', views.getUser, name='user'),
     path('login', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -23,7 +22,4 @@ urlpatterns = [
     path('changePassword', views.changePassword, name='changePassword'),
     path('logout/blacklist', views.BlacklistTokenUpdateView.as_view(),
          name='blacklist'),
-    
-#     path('spotify_login', views.spotify_login, name="spotify_login"),
-#     path('callback', views.callback_spotify_login, name="callback_spotify")
 ]

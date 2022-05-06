@@ -42,7 +42,6 @@ class BlacklistTokenUpdateView(APIView):
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -212,11 +211,3 @@ def deleteSongFromPlaylist(request, id: int, song_id: int):
     song = Song.objects.get(id=song_id)
     playlist.songs.remove(song)
     return Response(PlaylistSerializer(playlist, many=False).data, status=200)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def testUserPref(request):
-    print(request.user.id)
-    print(UserFavoritesSerializer(UserFavorites.objects.all(), many=True).data)
-    return Response(status=200)
