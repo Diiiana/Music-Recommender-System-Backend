@@ -25,7 +25,7 @@ def getSimilarSongs(request, id: int):
     user_id = request.user.id
     user = UserAccount.objects.get(id=user_id)
     c = connection.cursor()
-    c.execute('SELECT * FROM song_similarities(' + str(id) + ')')
+    c.execute('SELECT * FROM for_song_similarities(' + str(id) + ')')
     rows = c.fetchall()
     for s in rows:
         similarities.append(s[0])
@@ -62,10 +62,10 @@ def get_cb_rec(request):
         for s in rows:
             similarities.append(s[0])
     c.close()
-    s = Song.objects.filter(pk__in=similarities)
+    s = Song.objects.filter(id__in=similarities)
     recommendations = UserSongRecommendation.objects.filter(user=user).first()
     if recommendations is not None:
-        recommendations.songs.add(s)
+        recommendations.songs.add(*s)
     else:
         object = UserSongRecommendation.objects.create(user=user)
         object.songs.set(s)
@@ -76,10 +76,34 @@ def get_cb_rec(request):
 def test_cf_mf(request):
     reconstructed_model = tf.keras.models.load_model("neural_model")
     reconstructed_model.fit([np.array([71]), np.array([3000])], pd.Series([1]))
+    song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
+
+    predictions = reconstructed_model.predict(
+        [np.array([71]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    l = np.array(predictions, dtype=np.float32).tolist()
+    l = sum(l, [])
+    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    print(song_prediction[::-1][:10])
+
+    predictions = reconstructed_model.predict(
+        [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    l = np.array(predictions, dtype=np.float32).tolist()
+    l = sum(l, [])
+    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    print(song_prediction[::-1][:10])
+    
+    predictions = reconstructed_model.predict(
+        [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+    l = np.array(predictions, dtype=np.float32).tolist()
+    l = sum(l, [])
+    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+    print(song_prediction[::-1][:10])
+    
     # tf.keras.utils.plot_model(
     #     reconstructed_model, to_file='model.png', show_shapes=True)
-
-    # song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
 
     # predictions = reconstructed_model.predict(
     #     [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])

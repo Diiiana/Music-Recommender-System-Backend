@@ -10,9 +10,13 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from .models import UserAccount, UserSongLiked, UserSongHistory, Playlist, UserFavorites
 from song.models import Song
 from song.serializers import ViewSongSerializer
+from tag.models import Tag
+from tag.serializers import TagSerializer
 from django.contrib.auth.hashers import make_password
 from django.db.models import Count
 from django.utils import timezone
+from artist.serializers import ArtistSerializer
+from artist.models import Artist
 from rest_framework.views import APIView
 from .email_send import EmailSender
 
@@ -211,3 +215,69 @@ def deleteSongFromPlaylist(request, id: int, song_id: int):
     song = Song.objects.get(id=song_id)
     playlist.songs.remove(song)
     return Response(PlaylistSerializer(playlist, many=False).data, status=200)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteUserPlaylist(request, id: int):
+    user = UserAccount.objects.get(id=request.user.id)
+    playlist = Playlist.objects.get(id=id, user=user)
+    playlist.delete()
+    playlists = Playlist.objects.filter(user=user)
+    return Response(PlaylistSerializer(playlists, many=True).data, status=200)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteArtistFromFavorite(request, id: int):
+    user = UserAccount.objects.get(id=request.user.id)
+    user_favorites = UserFavorites.objects.get(user=user)
+    artist = Artist.objects.get(id=id)
+    user_favorites.artists.remove(artist)
+    artists = UserFavorites.objects.get(user=user).artists
+    return Response(ArtistSerializer(artists, many=True).data, status=200)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteTagFromFavorite(request, id: int):
+    user = UserAccount.objects.get(id=request.user.id)
+    user_favorites = UserFavorites.objects.get(user=user)
+    tag = Tag.objects.get(id=id)
+    user_favorites.tags.remove(tag)
+    tags = UserFavorites.objects.get(user=user).tags
+    return Response(TagSerializer(tags, many=True).data, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def saveArtists(request):
+    artists = request.data.get('artists')
+    artists = Artist.objects.filter(id__in=artists)
+    user_id = request.user.id
+    user = UserAccount.objects.get(id=user_id)
+    user_artists = UserFavorites.objects.get(user=user)
+    if user_artists is None:
+        user_favorite_artists = UserFavorites.objects.create(user=user)
+        user_favorite_artists.artists.add(*artists)
+    else:
+        user_artists.artists.add(*artists)
+    user_artists = UserFavorites.objects.get(user=user).artists
+    return Response(ArtistSerializer(user_artists, many=True).data, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def saveTags(request):
+    tags = request.data.get('tags')
+    tags = Tag.objects.filter(id__in=tags)
+    user_id = request.user.id
+    user = UserAccount.objects.get(id=user_id)
+    user_tags = UserFavorites.objects.get(user=user)
+    if user_tags is None:
+        user_favorite_tags = UserFavorites.objects.create(user=user)
+        user_favorite_tags.tags.add(*tags)
+    else:
+        user_tags.tags.add(*tags)
+    user_tags = UserFavorites.objects.get(user=user).tags
+    return Response(TagSerializer(user_tags, many=True).data, status=200)
