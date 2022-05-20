@@ -68,6 +68,7 @@ class NcfRecommender:
     num_songs = val_song_ids.max() + 1
 
     print(train_ratings)
+    print(type(train_ratings))
     print(type(train_user_ids), type(train_song_ids), type(train_ratings))
     model.fit([train_user_ids, train_song_ids], train_ratings,
               validation_data=([val_user_ids, val_song_ids], val_ratings),

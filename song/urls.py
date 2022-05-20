@@ -12,4 +12,5 @@ urlpatterns = [
     path('by-date', views.getSongsByReleaseDate),
     path('genre/<int:genre_id>', views.getSongsByGenre),
     path('artist/<int:artist_id>', views.getSongsByArtist),
+    path('search', views.searchForSong)
 ]

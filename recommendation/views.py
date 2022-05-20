@@ -9,7 +9,6 @@ from song.models import Song
 from account.models import UserAccount, UserSongLiked
 from song.serializers import ViewSongSerializer
 # from .lightfm_recommender import LightfmRecommender
-# from .ncf_rec import NcfRecommender
 from likes.models import Likes
 import pandas as pd
 from .models import UserSongRecommendation
@@ -69,70 +68,102 @@ def get_cb_rec(request):
     else:
         object = UserSongRecommendation.objects.create(user=user)
         object.songs.set(s)
+    reconstructed_model = tf.keras.models.load_model("neural_model")
+    reconstructed_model.fit([np.array([user_id]*len(similarities)),
+                            np.array(similarities)], pd.Series([1]*len(similarities)))
     return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
 
 
 @api_view(['GET'])
-def test_cf_mf(request):
+@permission_classes([IsAuthenticated])
+def get_cf_mf(request):
+    user_id = request.user.id
     reconstructed_model = tf.keras.models.load_model("neural_model")
-    reconstructed_model.fit([np.array([71]), np.array([3000])], pd.Series([1]))
     song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
 
     predictions = reconstructed_model.predict(
-        [np.array([71]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+        [np.array([user_id]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
     l = np.array(predictions, dtype=np.float32).tolist()
     l = sum(l, [])
     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
     song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    print(song_prediction[::-1][:10])
+    ids = []
+    for el in song_prediction[::-1][:20]:
+        ids.append(el[0])
+    songs = Song.objects.filter(id__in=ids)
+    return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(songs, many=True).data))
 
-    predictions = reconstructed_model.predict(
-        [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    l = np.array(predictions, dtype=np.float32).tolist()
-    l = sum(l, [])
-    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    print(song_prediction[::-1][:10])
+
+
+# @api_view(['GET'])
+# def test_cf_mf(request):
+#     reconstructed_model = tf.keras.models.load_model("neural_model")
+#     reconstructed_model.fit([np.array([71]), np.array([3000])], pd.Series([1]))
+#     song_ids = Likes.objects.all().values_list('song_id', flat=True).distinct()
+
+#     predictions = reconstructed_model.predict(
+#         [np.array([1]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     l = np.array(predictions, dtype=np.float32).tolist()
+#     l = sum(l, [])
+#     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     print(song_prediction[::-1][:10])
     
-    predictions = reconstructed_model.predict(
-        [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    l = np.array(predictions, dtype=np.float32).tolist()
-    l = sum(l, [])
-    song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    print(song_prediction[::-1][:10])
+#     predictions = reconstructed_model.predict(
+#         [np.array([71]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     l = np.array(predictions, dtype=np.float32).tolist()
+#     l = sum(l, [])
+#     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     print(song_prediction[::-1][:10])
+
+#     predictions = reconstructed_model.predict(
+#         [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     l = np.array(predictions, dtype=np.float32).tolist()
+#     l = sum(l, [])
+#     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     print(song_prediction[::-1][:10])
     
-    # tf.keras.utils.plot_model(
-    #     reconstructed_model, to_file='model.png', show_shapes=True)
+#     predictions = reconstructed_model.predict(
+#         [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     l = np.array(predictions, dtype=np.float32).tolist()
+#     l = sum(l, [])
+#     song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     print(song_prediction[::-1][:10])
+    
+#     # tf.keras.utils.plot_model(
+#     #     reconstructed_model, to_file='model.png', show_shapes=True)
 
-    # predictions = reconstructed_model.predict(
-    #     [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    # l = np.array(predictions, dtype=np.float32).tolist()
-    # l = sum(l, [])
-    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    # print(song_prediction[::-1][:10])
+#     # predictions = reconstructed_model.predict(
+#     #     [np.array([2]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     # l = np.array(predictions, dtype=np.float32).tolist()
+#     # l = sum(l, [])
+#     # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     # print(song_prediction[::-1][:10])
 
-    # predictions = reconstructed_model.predict(
-    #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    # l = np.array(predictions, dtype=np.float32).tolist()
-    # l = sum(l, [])
-    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
-    # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
-    # print(song_prediction[::-1][:10])
+#     # predictions = reconstructed_model.predict(
+#     #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     # l = np.array(predictions, dtype=np.float32).tolist()
+#     # l = sum(l, [])
+#     # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)
+#     # song_prediction = song_prediction[song_prediction[:, 1].argsort()]
+#     # print(song_prediction[::-1][:10])
 
-    # predictions = reconstructed_model2.predict(
-    #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    # l = np.array(predictions, dtype=np.float32).tolist()
-    # l = sum(l, [])
-    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
-    # print(song_prediction)
+#     # predictions = reconstructed_model2.predict(
+#     #     [np.array([3]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     # l = np.array(predictions, dtype=np.float32).tolist()
+#     # l = sum(l, [])
+#     # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
+#     # print(song_prediction)
 
-    # predictions = reconstructed_model2.predict(
-    #     [np.array([5]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
-    # l = np.array(predictions, dtype=np.float32).tolist()
-    # l = sum(l, [])
-    # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
-    # print(song_prediction)
-    # return HttpResponse(ViewSongSerializer(data, many=True).data, status=200)
-    return HttpResponse(200)
+#     # predictions = reconstructed_model2.predict(
+#     #     [np.array([5]*len(song_ids), dtype=np.int64), np.array(song_ids, dtype=np.int64)])
+#     # l = np.array(predictions, dtype=np.float32).tolist()
+#     # l = sum(l, [])
+#     # song_prediction = np.array(list(zip(song_ids, l)), dtype=object)[:100]
+#     # print(song_prediction)
+#     # return HttpResponse(ViewSongSerializer(data, many=True).data, status=200)
+#     return HttpResponse(200)

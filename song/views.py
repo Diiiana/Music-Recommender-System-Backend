@@ -4,9 +4,15 @@ from rest_framework.decorators import api_view
 from .models import Song
 from account.models import UserSongHistory, UserAccount, UserSongLiked, UserSongComment
 from account.serializers import UserSongCommentSerializer
-from .serializers import SongSerializer, ViewSongSerializer
+from .serializers import SongSerializer, ViewSongSerializer, MainAttributesSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.http import HttpResponse
+from django.db import connection
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import json
 
 
 @api_view(['GET'])
@@ -38,6 +44,9 @@ def get_song_by_id(request, song_id: int):
 def dislike_song_by_id_for_user(request, song_id: int):
     song = Song.objects.get(pk=song_id)
     user = UserAccount.objects.get(id=request.user.id)
+    reconstructed_model = tf.keras.models.load_model("neural_model")
+    reconstructed_model.fit([
+        np.array([request.user.id]), np.array([song_id])], pd.Series([0]))
     if UserSongLiked.objects.filter(user=user, song=song).exists():
         value = UserSongLiked.objects.get(user=user, song=song)
         value.feedback = 0
@@ -50,6 +59,10 @@ def dislike_song_by_id_for_user(request, song_id: int):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def like_song_by_id_for_user(request, song_id: int):
+    user_id = request.user.id
+    reconstructed_model = tf.keras.models.load_model("neural_model")
+    reconstructed_model.fit([
+        np.array([user_id]), np.array([song_id])], pd.Series([1]))
     song = Song.objects.get(pk=song_id)
     user = UserAccount.objects.get(id=request.user.id)
     if UserSongLiked.objects.filter(user=user, song=song).exists():
@@ -115,3 +128,18 @@ def getSongsByGenre(request, genre_id: int):
 def getSongsByArtist(request, artist_id: int):
     songs = Song.objects.filter(artist__id=artist_id)[:100]
     return Response(ViewSongSerializer(songs, many=True).data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def searchForSong(request):
+    value = request.data.get('value')
+    c = connection.cursor()
+    c.execute(
+        "SELECT id, ts_rank(for_text, websearch_to_tsquery('" + value + "')) as rank FROM TF_IDF_VIEW_SEARCH_BAR ORDER BY rank DESC;")
+    rows = c.fetchall()
+    values = []
+    for s in rows[:50]:
+        values.append(s[0])
+    s = Song.objects.filter(id__in=values)
+    return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
