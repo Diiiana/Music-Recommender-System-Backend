@@ -31,22 +31,10 @@ class NcfRecommender:
     n_users, n_songs = len(df.user_int_id.unique()), len(df.song_id.unique())
 
     song_input = tf.keras.layers.Input(shape=[1], name='Song')
-    song_embedding = tf.keras.layers.Embedding(n_songs, 16,
-                                               embeddings_initializer='uniform',
-                                               embeddings_regularizer=tf.keras.regularizers.l2(
-                                                   1e-6),
-                                               embeddings_constraint='NonNeg',
-                                               name='Song-Embedding')(song_input)
-    song_vec = tf.keras.layers.Flatten(name='FlattenSongs')(song_embedding)
+    song_vec = tf.keras.layers.Flatten(name='FlattenSongs')(song_input)
 
     user_input = tf.keras.layers.Input(shape=[1], name='User')
-    user_embedding = tf.keras.layers.Embedding(n_users, 16,
-                                               embeddings_initializer='uniform',
-                                               embeddings_regularizer=tf.keras.regularizers.l2(
-                                                   1e-6),
-                                               embeddings_constraint='NonNeg',
-                                               name='User-Embedding')(user_input)
-    user_vec = tf.keras.layers.Flatten(name='FlattenUsers')(user_embedding)
+    user_vec = tf.keras.layers.Flatten(name='FlattenUsers')(user_input)
 
     concat = tf.keras.layers.concatenate([song_vec, user_vec])
     mlp = tf.keras.layers.BatchNormalization()(concat)
@@ -67,9 +55,6 @@ class NcfRecommender:
     num_users = val_user_ids.max() + 1
     num_songs = val_song_ids.max() + 1
 
-    print(train_ratings)
-    print(type(train_ratings))
-    print(type(train_user_ids), type(train_song_ids), type(train_ratings))
     model.fit([train_user_ids, train_song_ids], train_ratings,
               validation_data=([val_user_ids, val_song_ids], val_ratings),
               epochs=10, batch_size=128, callbacks=callbacks)
@@ -77,7 +62,7 @@ class NcfRecommender:
 
     e = model.evaluate([val_user_ids, val_song_ids],
                        val_ratings, batch_size=128)
-    print("test loss, test acc, test precision, test recall:", e)
+    print("test loss, test acc, test precision, test recall, test rmse:", e)
 
     model.save('neural_model')
     tf.keras.utils.plot_model(
