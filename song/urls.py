@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import comparison
 
 urlpatterns = [
     path('', views.get_songs),
@@ -12,5 +13,14 @@ urlpatterns = [
     path('by-date', views.getSongsByReleaseDate),
     path('genre/<int:genre_id>', views.getSongsByGenre),
     path('artist/<int:artist_id>', views.getSongsByArtist),
-    path('search', views.searchForSong)
+    path('search', views.searchForSong),
+    
+    # test cosine
+    path('test_dictionary', comparison.test_dictionary),
+    path('test_dictionary_processes', comparison.test_dictionary_processes),
+    path('test_postgres_impl', comparison.test_postgres_impl),
+    
+    # test tfidf
+    path('test_tf_idf_python', comparison.test_tf_idf_cossim),
+    path('test_tf_idf_postgres', comparison.test_tf_idf_postgresql),
 ]

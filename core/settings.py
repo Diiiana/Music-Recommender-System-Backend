@@ -196,3 +196,6 @@ EMAIL_HOST_USER = 'muse.mm.music@gmail.com'
 EMAIL_HOST_PASSWORD = 'Muse1Music!23'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+import django
+django.setup()
