@@ -35,7 +35,7 @@ class LightfmRecommender:
         return score
     
     
-    qs = list(Likes.objects.all().values('song_id', 'user_id', 'liked'))
+    qs = list(Likes.objects.all().values('song_id', 'user_int_id', 'liked'))
     df_users = pd.DataFrame(list(qs))
     
     d = list(Likes.objects.values_list('song_id'))
@@ -44,7 +44,7 @@ class LightfmRecommender:
     qs_2 = list(Song.objects.all().filter(id__in=d).values('song_id', 'tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'))
     df_songs = pd.DataFrame(qs_2)
     
-    n_users = df_users['user_id'].unique().shape[0]
+    n_users = df_users['user_int_id'].unique().shape[0]
     n_items = df_songs['song_id'].unique().shape[0]
     print("users=", n_users, "| items= ", n_items, "\n")
 
@@ -56,7 +56,7 @@ class LightfmRecommender:
     count = 0
     user_ids = []
     final_users = []
-    for el in df_users['user_id']:
+    for el in df_users['user_int_id']:
             if el in user_ids:
                 df_users = df_users.replace(el, user_ids.index(el))
                 final_users.append((el, user_ids.index(el)))
@@ -79,19 +79,19 @@ class LightfmRecommender:
     df_merged = df_users.merge(df_songs, how='inner', left_on='song_id', right_on='song_id')
     
     songs_features_list = generate_feature_list(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'])
-    users_features_list = generate_feature_list(df_users, ['user_id'])
+    users_features_list = generate_feature_list(df_users, ['user_int_id'])
 
     df_songs['song_features'] = create_features(df_songs, ['tag', 'instrumentalness', 'valence', 'energy', 'danceability', 'acousticness', 'speechiness'], 'song_id')
-    df_users['user_features'] = create_features(df_users, ['user_id'], 'user_id')
+    df_users['user_features'] = create_features(df_users, ['user_int_id'], 'user_int_id')
     
     dataset = Dataset()
     dataset.fit(
-        set(df_users['user_id']),
+        set(df_users['user_int_id']),
         set(df_songs['song_id']),
         item_features=songs_features_list, 
         user_features=users_features_list)
     
-    df_merged['song_user_id_tuple'] = list(zip(df_merged['user_id'], df_merged['song_id'], df_merged['weight']))
+    df_merged['song_user_id_tuple'] = list(zip(df_merged['user_int_id'], df_merged['song_id'], df_merged['weight']))
     interactions, weights = dataset.build_interactions(df_merged['song_user_id_tuple'])
             
     song_features = dataset.build_item_features(df_songs['song_features'])
@@ -101,7 +101,7 @@ class LightfmRecommender:
     train_weights, test_weights = cross_validation.random_train_test_split(weights, test_percentage=0.3, random_state=np.random.RandomState(3))
     
     model = LightFM(
-    no_components=150,
+    no_components=10,
     learning_rate=0.05,
     loss='warp',
     random_state=3)

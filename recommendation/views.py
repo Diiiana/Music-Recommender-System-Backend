@@ -7,8 +7,6 @@ import numpy as np
 import tensorflow as tf
 from song.models import Song
 from account.models import UserAccount, UserSongLiked
-from song.serializers import ViewSongSerializer
-# from .lightfm_recommender import LightfmRecommender
 from likes.models import Likes
 import pandas as pd
 from .models import UserSongRecommendation
@@ -53,7 +51,7 @@ def get_cb_rec(request):
         if UserSongLiked.objects.filter(user=user, song=s).first() is None:
             UserSongLiked.objects.create(user=user, song=s, feedback=1)
 
-    favoriteSongs = songs_liked[:5]
+    favoriteSongs = songs_liked[:3]
     c = connection.cursor()
 
     for song_id in favoriteSongs:
@@ -69,6 +67,7 @@ def get_cb_rec(request):
     else:
         object = UserSongRecommendation.objects.create(user=user)
         object.songs.set(s)
+        object.save()
     reconstructed_model = tf.keras.models.load_model("neural_model")
     reconstructed_model.fit([np.array([user_id]*len(similarities)),
                             np.array(similarities)], pd.Series([1]*len(similarities)))

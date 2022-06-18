@@ -19,7 +19,11 @@ from artist.serializers import ArtistSerializer
 from artist.models import Artist
 from rest_framework.views import APIView
 from .email_send import EmailSender
-
+from recommendation.models import UserSongRecommendation
+from song.serializers import MainAttributesSerializer
+from django.http import HttpResponse
+import json
+from django.db import connection
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -281,3 +285,25 @@ def saveTags(request):
         user_tags.tags.add(*tags)
     user_tags = UserFavorites.objects.get(user=user).tags
     return Response(TagSerializer(user_tags, many=True).data, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getMoreRecommendations(request):
+    user_id = request.user.id
+    user = UserAccount.objects.get(id=user_id)
+    recommendations = UserSongRecommendation.objects.get(user=user).songs.all().values_list('id', flat=True)
+    liked_songs = UserSongLiked.objects.filter(user=user).order_by('?')[:2].values_list('song', flat=True)
+    
+    similarities = []
+    c = connection.cursor()
+    for song_id in liked_songs:
+        c.execute('SELECT * FROM song_similarities(' + str(song_id) + ')')
+        rows = c.fetchall()
+        for s in rows:
+            similarities.append(s[0])
+    c.close()
+    s = Song.objects.filter(id__in=similarities).exclude(id__in=recommendations)
+    recommendations = UserSongRecommendation.objects.get(user=user)
+    recommendations.songs.add(*s)
+    return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))

@@ -27,4 +27,5 @@ urlpatterns = [
     path('changePassword', views.changePassword, name='changePassword'),
     path('logout/blacklist', views.BlacklistTokenUpdateView.as_view(),
          name='blacklist'),
+    path('more-recommendations', views.getMoreRecommendations, name='more-recommendations'),
 ]
