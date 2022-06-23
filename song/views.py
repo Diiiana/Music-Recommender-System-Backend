@@ -78,7 +78,6 @@ def like_song_by_id_for_user(request, song_id: int):
 @permission_classes([IsAuthenticated])
 def getSongComments(request, song_id: int):
     song = Song.objects.get(pk=song_id)
-    user = UserAccount.objects.get(id=request.user.id)
     comments = UserSongComment.objects.filter(song=song)
     if comments is not None:
         return Response(UserSongCommentSerializer(comments, many=True).data, status.HTTP_200_OK)

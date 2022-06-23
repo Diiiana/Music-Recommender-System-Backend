@@ -25,6 +25,7 @@ from django.http import HttpResponse
 import json
 from django.db import connection
 
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -292,18 +293,20 @@ def saveTags(request):
 def getMoreRecommendations(request):
     user_id = request.user.id
     user = UserAccount.objects.get(id=user_id)
-    recommendations = UserSongRecommendation.objects.get(user=user).songs.all().values_list('id', flat=True)
-    liked_songs = UserSongLiked.objects.filter(user=user).order_by('?')[:2].values_list('song', flat=True)
-    
-    similarities = []
-    c = connection.cursor()
-    for song_id in liked_songs:
-        c.execute('SELECT * FROM song_similarities(' + str(song_id) + ')')
-        rows = c.fetchall()
-        for s in rows:
-            similarities.append(s[0])
-    c.close()
-    s = Song.objects.filter(id__in=similarities).exclude(id__in=recommendations)
-    recommendations = UserSongRecommendation.objects.get(user=user)
-    recommendations.songs.add(*s)
-    return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
+    liked_songs = UserSongLiked.objects.filter(user=user).order_by('?')[
+        :2].values_list('song', flat=True)
+
+    if len(liked_songs) > 0 and liked_songs is not None:
+        similarities = []
+        c = connection.cursor()
+        for song_id in liked_songs:
+            c.execute('SELECT * FROM song_similarities(' + str(song_id) + ')')
+            rows = c.fetchall()
+            for s in rows:
+                similarities.append(s[0])
+        c.close()
+        s = Song.objects.filter(id__in=similarities).exclude(
+            id__in=UserSongLiked.objects.filter(user=user).values_list('song', flat=True))
+        return HttpResponse(status=200, content=json.dumps(MainAttributesSerializer(s, many=True).data))
+    else:
+        return HttpResponse(status=200)
