@@ -44,9 +44,24 @@ def get_song_by_id(request, song_id: int):
 def dislike_song_by_id_for_user(request, song_id: int):
     song = Song.objects.get(pk=song_id)
     user = UserAccount.objects.get(id=request.user.id)
-    reconstructed_model = tf.keras.models.load_model("neural_model")
-    reconstructed_model.fit([
-        np.array([request.user.id]), np.array([song_id])], pd.Series([0]))
+    check_processed = list(UserSongLiked.objects.filter(
+        user=user).values_list('processed', flat=True))
+    if check_processed.count(False) > 30:
+        data = []
+        songs = list(UserSongLiked.objects.filter(
+            user=user, processed=False).values_list('song', flat=True))
+        for song_id in songs:
+            liked = UserSongLiked.objects.get(user=user, song=song_id)
+            if liked is not None:
+                data.append(liked.feedback)
+            else:
+                data.append(0)
+            liked.processed = True
+            liked.save()
+        reconstructed_model = tf.keras.models.load_model("neural_model")
+        reconstructed_model.fit([
+            np.array([request.user.id]*len(songs)), np.array(songs)], pd.Series(data))
+
     if UserSongLiked.objects.filter(user=user, song=song).exists():
         value = UserSongLiked.objects.get(user=user, song=song)
         value.feedback = 0
@@ -59,12 +74,26 @@ def dislike_song_by_id_for_user(request, song_id: int):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def like_song_by_id_for_user(request, song_id: int):
-    user_id = request.user.id
-    reconstructed_model = tf.keras.models.load_model("neural_model")
-    reconstructed_model.fit([
-        np.array([user_id]), np.array([song_id])], pd.Series([1]))
     song = Song.objects.get(pk=song_id)
     user = UserAccount.objects.get(id=request.user.id)
+    check_processed = list(UserSongLiked.objects.filter(
+        user=user).values_list('processed', flat=True))
+    print(check_processed)
+    if check_processed.count(False) > 30:
+        data = []
+        songs = list(UserSongLiked.objects.filter(
+            user=user, processed=False).values_list('song', flat=True))
+        for song_id in songs:
+            liked = UserSongLiked.objects.get(user=user, song=song_id)
+            if liked is not None:
+                data.append(liked.feedback)
+            else:
+                data.append(0)
+            liked.processed = True
+            liked.save()
+        reconstructed_model = tf.keras.models.load_model("neural_model")
+        reconstructed_model.fit([
+            np.array([request.user.id]*len(songs)), np.array(songs)], pd.Series(data))
     if UserSongLiked.objects.filter(user=user, song=song).exists():
         value = UserSongLiked.objects.get(user=user, song=song)
         value.feedback = 1

@@ -63,6 +63,7 @@ class UserSongLiked(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.SET_NULL, null=True)
     song = models.ForeignKey(Song, on_delete=models.SET_NULL, null=True)
     feedback = models.IntegerField(default=-1)
+    processed = models.BooleanField(default=False)
     timestamp = models.DateField(auto_now_add=True)
 
     class Meta:
