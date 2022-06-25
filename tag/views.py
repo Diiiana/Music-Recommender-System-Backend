@@ -15,8 +15,16 @@ from song.models import Song
 @permission_classes([AllowAny])
 def get_tags(self):
     queryset = Tag.objects.all().order_by('name')
-    serializer_class = TagSerializer(queryset, many=True)
-    return Response(serializer_class.data, status=status.HTTP_200_OK)
+    tag_data = TagSerializer(queryset, many=True)
+    return Response(tag_data.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_tag_by_id(request, tag_id: int):
+    tag = Tag.objects.get(id=tag_id)
+    tag_data = TagSerializer(tag, many=False).data
+    return Response(tag_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

@@ -4,7 +4,6 @@ from sklearn.preprocessing import LabelEncoder
 import tensorflow as tf
 import pandas as pd
 from likes.models import Likes
-from matplotlib import pyplot as plt
     
 
 class NcfRecommender:
@@ -63,16 +62,5 @@ class NcfRecommender:
 
     e = model.evaluate([val_user_ids, val_song_ids],
                        val_ratings, batch_size=128)
-    print("test loss, test acc, test precision, test recall, test rmse:", e)
 
-    # model.save('neural_model')
-    tf.keras.utils.plot_model(
-        model, to_file='model.png', show_shapes=True)
-
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('Pierdere')
-    plt.ylabel('Pierdere')
-    plt.xlabel('Epocă')
-    plt.legend(['antrenare', 'valoare'], loc='upper left')
-    plt.show()
+    model.save('neural_model')

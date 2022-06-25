@@ -19,7 +19,6 @@ from artist.serializers import ArtistSerializer
 from artist.models import Artist
 from rest_framework.views import APIView
 from .email_send import EmailSender
-from recommendation.models import UserSongRecommendation
 from song.serializers import MainAttributesSerializer
 from django.http import HttpResponse
 import json
