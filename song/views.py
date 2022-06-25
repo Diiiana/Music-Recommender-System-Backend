@@ -78,7 +78,6 @@ def like_song_by_id_for_user(request, song_id: int):
     user = UserAccount.objects.get(id=request.user.id)
     check_processed = list(UserSongLiked.objects.filter(
         user=user).values_list('processed', flat=True))
-    print(check_processed)
     if check_processed.count(False) > 30:
         data = []
         songs = list(UserSongLiked.objects.filter(
