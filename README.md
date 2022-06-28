@@ -9,7 +9,7 @@ Pentru instalarea proiectului, se utilieaza comenzile:
 2. ```python pthon -m venv env```                                                     &emsp; - creare environment
 3. ```env\Scripts\activate```                                                         &emsp; - activare environment
 <br />
----
+<hr />
 <br />
 &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; instalare biblioteci utilizate <br />
 4.  
