@@ -8,5 +8,7 @@ Pentru instalarea proiectului, se utilieaza comenzile:
 1. ```git clone https://github.com/Diiiana/MusicRecommenderSystem_backend.git```      &emsp; - descarcare proiect
 2. ```python pthon -m venv env```                                                     &emsp; - creare environment
 3. ```env\Scripts\activate```                                                         &emsp; - activare environment
-------------------- instalare biblioteci utilizate ----------------------
-5. 
+<br />
+---
+&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; instalare biblioteci utilizate
+4.  
