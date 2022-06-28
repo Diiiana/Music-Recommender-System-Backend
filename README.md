@@ -11,15 +11,15 @@ Pentru instalarea proiectului, se utilieaza comenzile:
 <hr />
 Instalare biblioteci utilizate<br />
 
-4.  pip install django <br />
-5.  pip install djangorestframework <br />
-6.  pip install django-cors-headers <br />
-7.  pip install --upgrade djangorestframework-simplejwt <br />
-8.  pip install psycopg2 <br />
-9.  pip install numpy <br />
-10.  pip install pandas <br />
-11.  pip install tensorflow <br />
-12.  pip install sklearn <br />
-13.  pip install cython <br />
-14.  pip install git+https://github.com/ing-bank/sparse_dot_topn.git <br />
-15.  pip install lightfm <br />
+4. ```pip install django``` <br />
+5. ```pip install djangorestframework``` <br />
+6. ```pip install django-cors-headers``` <br />
+7. ```pip install --upgrade djangorestframework-simplejwt``` <br />
+8. ```pip install psycopg2``` <br />
+9. ```pip install numpy``` <br />
+10. ```pip install pandas``` <br />
+11. ```pip install tensorflow``` <br />
+12. ```pip install sklearn``` <br />
+13. ```pip install cython``` <br />
+14. ```pip install git+https://github.com/ing-bank/sparse_dot_topn.git``` <br />
+15. ```pip install lightfm``` <br />
