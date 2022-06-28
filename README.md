@@ -11,7 +11,8 @@ Pentru instalarea proiectului, se utilieaza comenzile:
 <br />
 <hr />
 <br />
-&emsp; &emsp; &emsp; &emsp; Instalare biblioteci utilizate <br />
+Instalare biblioteci utilizate<br />
+
 4.  pip install django <br />
 5.  pip install djangorestframework <br />
 6.  pip install django-cors-headers <br />
