@@ -10,5 +10,6 @@ Pentru instalarea proiectului, se utilieaza comenzile:
 3. ```env\Scripts\activate```                                                         &emsp; - activare environment
 <br />
 ---
-&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; instalare biblioteci utilizate
+<br />
+&emsp; &emsp; &emsp; &emsp; &emsp; &emsp; instalare biblioteci utilizate <br />
 4.  
