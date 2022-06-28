@@ -2,4 +2,8 @@
 
 
 Limbajul de programare folosit: Python 3.10 <br />
-Pentru instalarea environment-ului, se utilizeaza comanda: pip install -r requirements.txt
+<br />
+Pentru instalarea proiectului, se utilieaza comenzile:
+
+1. ```git clone https://github.com/Diiiana/MusicRecommenderSystem_backend.git```
+ 
