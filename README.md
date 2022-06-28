@@ -1,24 +1,25 @@
 # MusicRecommenderSystem_backend
 
 
-Limbajul de programare folosit: Python 3.10
-Pentru instalare, sunt necesare bibliotecile:
+Limbajul de programare folosit: Python 3.10 <br />
+<br />
+Pentru instalarea proiectului, se utilieaza comenzile:
 
-* Django 3.2.12
-* Cython 0.29.30
-* django-cors-headers 3.11.0
-* djangorestframework 3.13.1
-* djangorestframework-simplejwt 5.1.0
-* imbalanced-learn 0.9.0
-* implicit 0.5.2
-* keras 2.8.0
-* lightfm 1.16
-* matplotlib 3.5.1
-* numpy 1.21.5
-* pandas 1.3.5
-* psycopg2 2.9.3
-* scikit-learn 1.0.2
-* scikit-surprise 1.1.1
-* scipy 1.7.3
-* sparse-dot-topn 0.3.1
-* tensorflow 2.8.0
+1. ```git clone https://github.com/Diiiana/MusicRecommenderSystem_backend.git```      &emsp; - descarcare proiect
+2. ```python pthon -m venv env```                                                     &emsp; - creare environment
+3. ```env\Scripts\activate```                                                         &emsp; - activare environment
+<hr />
+Instalare biblioteci utilizate<br />
+
+4. ```pip install django``` <br />
+5. ```pip install djangorestframework``` <br />
+6. ```pip install django-cors-headers``` <br />
+7. ```pip install --upgrade djangorestframework-simplejwt``` <br />
+8. ```pip install psycopg2``` <br />
+9. ```pip install numpy``` <br />
+10. ```pip install pandas``` <br />
+11. ```pip install tensorflow``` <br />
+12. ```pip install sklearn``` <br />
+13. ```pip install cython``` <br />
+14. ```pip install git+https://github.com/ing-bank/sparse_dot_topn.git``` <br />
+15. ```pip install lightfm``` <br />
