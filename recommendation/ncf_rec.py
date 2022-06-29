@@ -4,7 +4,8 @@ from sklearn.preprocessing import LabelEncoder
 import tensorflow as tf
 import pandas as pd
 from likes.models import Likes
-    
+from matplotlib import pyplot as plt
+
 
 class NcfRecommender:
     qs = list(Likes.objects.all().values('song_id', 'user_int_id', 'liked'))
@@ -57,8 +58,16 @@ class NcfRecommender:
 
     history = model.fit([train_user_ids, train_song_ids], train_ratings,
               validation_data=([val_user_ids, val_song_ids], val_ratings),
-              epochs=10, batch_size=128, callbacks=callbacks)
+              epochs=30, batch_size=128, callbacks=callbacks)
     model.summary()
+    
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Evaluare Loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.show()
 
     e = model.evaluate([val_user_ids, val_song_ids],
                        val_ratings, batch_size=128)

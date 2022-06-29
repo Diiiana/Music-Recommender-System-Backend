@@ -7,6 +7,8 @@ from lightfm import LightFM, cross_validation
 
 from likes.models import Likes
 from song.models import Song
+import matplotlib.pyplot as plt
+import time
 
 class LightfmRecommender:
 
@@ -137,4 +139,34 @@ class LightfmRecommender:
     print("\n\nPrecision is: train", precision_train, ", test: ", precision_test)
     print("Recall is: train", recall_train, ", test: ", recall_test)
     print("Accuracy is: train", acc_train, ", test: ", acc_test)
+
+    alpha = 1e-05
+    epochs = 70
+    num_components = 2
+
+    warp_model = LightFM(no_components=num_components,
+                        loss='warp',
+                        learning_schedule='adagrad',
+                        max_sampled=100,
+                        user_alpha=alpha,
+                        item_alpha=alpha)
+
+    warp_duration = []
+    warp_auc = []
+
+    for epoch in range(epochs):
+        start = time.time()
+        warp_model.fit_partial(train_interactions,
+                            user_features=user_features,
+                            item_features=song_features, epochs=1)
+        warp_duration.append(time.time() - start)
+        warp_auc.append(auc_score( 
+            warp_model, test_interactions, 
+            item_features=song_features, 
+            user_features=user_features, 
+            num_threads=4).mean())
         
+    x = np.arange(epochs)
+    plt.plot(x, np.array(warp_auc))
+    plt.legend(['WARP AUC'], loc='upper right')
+    plt.show()

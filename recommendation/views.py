@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 import random
 import tensorflow as tf
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getSimilarSongs(request, id: int):
