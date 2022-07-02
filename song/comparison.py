@@ -133,20 +133,20 @@ def test_tf_idf_cossim(request):
         start = time.time()
         for id in array_songs:
             qs = list(Song.objects.all().values('id', 'artist__name', 'tag'))
-            df = pd.DataFrame(list(qs))
+            dataset = pd.DataFrame(list(qs))
             
-            given_song = df.loc[df['id'] == id]
+            given_song = dataset.loc[dataset['id'] == id]
             given_song = [given_song.iloc[0]['artist__name'] + ', ' + given_song.iloc[0]['tag']]
-            df = df[df.id != id]
+            dataset = dataset[dataset.id != id]
 
-            df['text'] = df['artist__name'] + ', ' + df['tag']
-            df = df['text'].tolist()
+            dataset['text'] = dataset['artist__name'] + ', ' + dataset['tag']
+            dataset = dataset['text'].tolist()
 
-            vec = TfidfVectorizer()
-            vec.fit(df)
-            X_values = vec.transform(df)
-            X = vec.transform(given_song)
-            data, top = awesome_cossim_topn(X, X_values.T, 50, 0.01, use_threads=True, n_jobs=4, return_best_ntop=True)
+            song_text_fit = TfidfVectorizer()
+            song_text_fit.fit(dataset)
+            songs = song_text_fit.transform(dataset)
+            song_fit = song_text_fit.transform(given_song)
+            data = awesome_cossim_topn(songs, song_fit.T, 50, 0.1, True, 4, True)
             data = data.tocoo()
             songs_ids = data.col 
             for s in songs_ids:
