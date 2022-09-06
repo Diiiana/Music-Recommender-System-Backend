@@ -25,5 +25,7 @@ Install required libraries<br />
 15. ```pip install lightfm``` <br />
 
 Create database migrations: <br />
-``python manage.py makemigrations <br />``
-``python manage.py migrate <br />``
+``python manage.py makemigrations ``
+<br />
+``python manage.py migrate``
+<br />
