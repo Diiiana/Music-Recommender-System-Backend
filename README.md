@@ -9,7 +9,7 @@ To install the project:
 2. ```python pthon -m venv env```                                                     &emsp; - create the environment
 3. ```env\Scripts\activate```                                                         &emsp; - activate
 <hr />
-Instalall used libraries<br />
+Install required libraries<br />
 
 4. ```pip install django``` <br />
 5. ```pip install djangorestframework``` <br />
