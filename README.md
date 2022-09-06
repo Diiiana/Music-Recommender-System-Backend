@@ -3,7 +3,7 @@
 
 Programming language: Python 3.10 <br />
 <br />
-To install the project:
+To install and run the project:
 
 1. ```git clone https://github.com/Diiiana/MusicRecommenderSystem_backend.git```      &emsp; - download
 2. ```python pthon -m venv env```                                                     &emsp; - create the environment
