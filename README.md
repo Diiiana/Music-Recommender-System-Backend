@@ -7,7 +7,7 @@ To install and run the project:
 
 1. ```git clone https://github.com/Diiiana/MusicRecommenderSystem_backend.git```      &emsp; - download
 2. ```python pthon -m venv env```                                                     &emsp; - create the environment
-3. ```env\Scripts\activate```                                                         &emsp; - activate
+3. ```env\Scripts\activate```                                                         &emsp; - activate the environment 
 <hr />
 Install required libraries<br />
 
